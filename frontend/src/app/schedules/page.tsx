@@ -12,6 +12,7 @@ interface ExamSchedule {
     registerStart: string;
     registerEnd: string;
     resultDate: string;
+    status: "진행 중" | "마감";
     isSubscribed: boolean;
 }
 
@@ -33,6 +34,11 @@ export default function SchedulesPage() {
         try {
             const data = await apiRequest<ExamSchedule[]>("/api/exams/schedules");
             setSchedules(data);
+            if (data && data.length > 0) {
+                const years = data.map(s => s.year);
+                const maxYear = Math.max(...years);
+                setSelectedYear(maxYear);
+            }
         } catch (error) {
             console.error("Failed to fetch schedules:", error);
         } finally {
@@ -145,6 +151,7 @@ export default function SchedulesPage() {
                             <thead>
                                 <tr className="bg-gray-50/75 border-b border-gray-100">
                                     <th className="py-4 px-6 text-xs font-black text-gray-400 uppercase tracking-wider">회차</th>
+                                    <th className="py-4 px-6 text-xs font-black text-gray-400 uppercase tracking-wider">상태</th>
                                     <th className="py-4 px-6 text-xs font-black text-gray-400 uppercase tracking-wider">원서 접수 기간</th>
                                     <th className="py-4 px-6 text-xs font-black text-gray-400 uppercase tracking-wider">시험 일자</th>
                                     <th className="py-4 px-6 text-xs font-black text-gray-400 uppercase tracking-wider">합격자 발표일</th>
@@ -168,6 +175,19 @@ export default function SchedulesPage() {
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                 </svg>
                                             </a>
+                                        </td>
+                                        
+                                        {/* 상태 배지 */}
+                                        <td className="py-5 px-6 text-xs">
+                                            <span
+                                                className={`inline-block px-2.5 py-1 rounded-full font-bold ${
+                                                    schedule.status === "진행 중"
+                                                        ? "bg-blue-50 text-blue-600"
+                                                        : "bg-gray-100 text-gray-500"
+                                                }`}
+                                            >
+                                                {schedule.status}
+                                            </span>
                                         </td>
                                         
                                         {/* 원서 접수 기간 */}

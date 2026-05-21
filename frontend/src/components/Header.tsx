@@ -44,27 +44,32 @@ export default function Header() {
     };
 
     return (
-        <header className="border-b px-4 py-3 flex justify-between items-center bg-white sticky top-0 z-10">
-            <h1 className="text-xl font-bold text-blue-600">
-                <Link href="/">한국사능력검정시험</Link>
+        <header className="border-b border-toss-gray200/80 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 transition-all">
+            <h1 className="text-xl font-bold text-toss-blue tracking-tight hover:opacity-80 transition-opacity">
+                <Link href="/" className="flex items-center gap-1.5 group">
+                    <span className="inline-flex items-center justify-center bg-toss-blue text-white font-black text-[10px] px-2 h-7 rounded-xl shadow-sm transition-transform group-hover:scale-105 active:scale-95 leading-none">
+                        ㅎㄴㄱ
+                    </span>
+                    <span className="font-extrabold text-toss-gray900 text-lg tracking-tight group-hover:text-toss-blue transition-colors">ㅎㄴㄱ</span>
+                </Link>
             </h1>
-            <nav className="space-x-4 flex items-center">
+            <nav className="flex items-center gap-2">
                 {isAdmin && (
-                    <Link href="/admin" className="text-red-500 font-bold hover:text-red-700">관리자</Link>
+                    <Link href="/admin" className="text-red-500 font-bold hover:bg-red-50 px-3 py-1.5 rounded-xl transition-all text-sm">관리자</Link>
                 )}
-                <Link href="/education" className="hover:text-blue-500">교육자료</Link>
-                <Link href="/materials" className="hover:text-blue-500">학습자료</Link>
-                <Link href="/cbt" className="hover:text-blue-500">CBT 기출문제</Link>
-                <Link href="/schedules" className="hover:text-blue-500">시험 일정</Link>
+                <Link href="/education" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">교육자료</Link>
+                <Link href="/cbt" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">CBT 기출문제</Link>
+                <Link href="/schedules" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">시험 일정</Link>
                 {isLoggedIn && (
-                    <Link href="/mypage" className="hover:text-blue-500">마이페이지</Link>
+                    <Link href="/mypage" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">마이페이지</Link>
                 )}
+                <div className="border-l border-toss-gray200 h-4 mx-2" />
                 {isLoggedIn ? (
-                    <button onClick={handleLogout} className="px-4 py-2 rounded bg-gray-600 text-white hover:bg-gray-700">
+                    <button onClick={handleLogout} className="px-4 py-2 rounded-xl bg-toss-gray200 text-toss-gray800 hover:bg-toss-gray300 text-xs font-bold transition-all">
                         로그아웃
                     </button>
                 ) : (
-                    <Link href="/auth/login" className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">
+                    <Link href="/auth/login" className="px-4 py-2 rounded-xl bg-toss-blue text-white hover:bg-toss-blueHover text-xs font-bold transition-all shadow-sm">
                         로그인
                     </Link>
                 )}
