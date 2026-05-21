@@ -1,0 +1,37 @@
+{
+  "year": 2022,
+  "roundNumber": 60,
+  "level": "심화",
+  "title": "2022년 60회 심화",
+  "examDate": "2022-08-06",
+  "totalQuestions": 2,
+  "sourceUrl": "http://www.historyexam.go.kr",
+  "pdfFilePath": null,
+  "questions": [
+    {
+      "questionNumber": 1,
+      "contentText": "(가) 시대의 생활 모습으로 옳은 것은?",
+      "imageUrl": "https://via.placeholder.com/600x300?text=Mock+Question+1+Image",
+      "choices": [
+        "주로 동굴이나 막집에 거주하였다.",
+        "가락바퀴를 이용하여 실을 뽑았다.",
+        "명도전을 이용하여 중국과 교역하였다.",
+        "철제 농기구를 사용하여 농사를 지었다.",
+        "의례용 도구로 청동 방울 등을 사용하였다."
+      ],
+      "answer": 2,
+      "explanation": "(가)는 신석기 시대입니다. 신석기 시대에는 가락바퀴와 뼈바늘을 이용하여 옷이나 그물을 만들었습니다.",
+      "wrongExplanations": {
+        "1": "주로 동굴이나 막집에 거주하며 이동 생활을 했다. X → 🔴 핵심 구석기 시대의 특징.",
+        "3": "명도전을 이용하여 중국과 교역하였다. X → 🔴 핵심 철기 시대.",
+        "4": "철제 농기구를 사용하여 농사를 지었다. X → 🔴 핵심 철기 시대.",
+        "5": "의례용 도구로 청동 방울 등을 사용하였다. X → 🔴 핵심 청동기 시대."
+      },
+      "era": "01_prehistory",
+      "topic": "사회",
+      "difficulty": "하",
+      "frequentConcept": true,
+      "sourceUrl": "http://www.historyexam.go.kr"
+    }
+  ]
+}
