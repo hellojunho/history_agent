@@ -42,7 +42,7 @@ export default function Page(): JSX.Element {
                                 <BookOpen className="w-6 h-6" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="font-extrabold text-lg text-toss-gray900">시대별 교육자료</h4>
+                                <h4 className="font-extrabold text-lg text-toss-gray900">시대별 학습자료</h4>
                                 <p className="text-toss-gray600 text-xs leading-relaxed">
                                     흐름을 잡아야 한능검 1급을 받습니다. 체계적이고 직관적인 마크다운 서술형 학습 제공.
                                 </p>
@@ -122,7 +122,7 @@ export default function Page(): JSX.Element {
                     <div>
                         <h4 className="font-bold text-toss-gray900 text-sm">출제 포인트 및 오개념 주의</h4>
                         <p className="text-toss-gray600 text-xs leading-normal">
-                            고려의 삼사(회계 기구)는 조선의 삼사(언론 기구)와 다릅니다. 이와 같은 핵심 함정 지문을 교육자료에서 확인하세요.
+                            고려의 삼사(회계 기구)는 조선의 삼사(언론 기구)와 다릅니다. 이와 같은 핵심 함정 지문을 학습자료에서 확인하세요.
                         </p>
                     </div>
                 </div>

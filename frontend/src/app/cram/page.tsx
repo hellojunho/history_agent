@@ -21,8 +21,38 @@ import {
 // Local storage key for cram quiz records
 const CRAM_STORAGE_KEY = "hanneunggeom_cram_quiz_records";
 
+const ERA_OPTIONS = [
+    { id: "all", name: "전체 시대", count: 450 },
+    { id: "prehistory", name: "선사 & 고조선", count: 50 },
+    { id: "threeKingdoms", name: "삼국 & 가야", count: 50 },
+    { id: "unifiedSilla", name: "통일신라 & 발해", count: 50 },
+    { id: "goryeo", name: "고려", count: 50 },
+    { id: "earlyJoseon", name: "조선전기", count: 50 },
+    { id: "lateJoseon", name: "조선후기", count: 50 },
+    { id: "portOpening", name: "개항기", count: 50 },
+    { id: "japaneseColonial", name: "일제강점기", count: 50 },
+    { id: "modern", name: "현대사", count: 50 }
+];
+
+const ERA_MAP: Record<string, string> = {
+    "prehistory": "선사 & 고조선",
+    "threeKingdoms": "삼국 & 가야",
+    "unifiedSilla": "통일신라 & 발해",
+    "goryeo": "고려",
+    "earlyJoseon": "조선전기",
+    "lateJoseon": "조선후기",
+    "portOpening": "개항기",
+    "japaneseColonial": "일제강점기",
+    "modern": "현대사"
+};
+
 export default function CramPage() {
     const [activeTab, setActiveTab] = useState<"summary" | "quiz">("summary");
+    
+    // Starter configs
+    const [selectedEra, setSelectedEra] = useState<string>("all");
+    const [selectedCount, setSelectedCount] = useState<number>(20);
+    const [quizStarted, setQuizStarted] = useState<boolean>(false);
     
     // Quiz state
     const [shuffledQuizzes, setShuffledQuizzes] = useState<CramQuestion[]>([]);
@@ -45,20 +75,26 @@ export default function CramPage() {
                 console.error("Failed to parse cram records", e);
             }
         }
-        
-        // Initialize shuffled quizzes
-        shuffleAndResetQuizzes();
     }, []);
 
-    // Shuffle helper
-    const shuffleAndResetQuizzes = () => {
-        const shuffled = [...cramQuizzes].sort(() => Math.random() - 0.5);
-        setShuffledQuizzes(shuffled);
+    // Shuffle and start quiz helper
+    const handleStartQuiz = () => {
+        let filtered = [...cramQuizzes];
+        if (selectedEra !== "all") {
+            const eraValue = ERA_MAP[selectedEra];
+            filtered = filtered.filter(q => q.era === eraValue);
+        }
+        
+        const shuffled = filtered.sort(() => Math.random() - 0.5);
+        const sliced = shuffled.slice(0, selectedCount);
+        
+        setShuffledQuizzes(sliced);
         setCurrentQuizIndex(0);
         setSelectedAnswer(null);
         setIsEvaluated(false);
         setScore(0);
         setQuizFinished(false);
+        setQuizStarted(true);
     };
 
     const handleAnswerSelect = (choiceIndex: number) => {
@@ -249,10 +285,7 @@ export default function CramPage() {
                 <button
                     onClick={() => {
                         setActiveTab("quiz");
-                        // Shuffle on first switch or reset
-                        if (shuffledQuizzes.length === 0) {
-                            shuffleAndResetQuizzes();
-                        }
+                        setQuizStarted(false);
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
                         activeTab === "quiz"
@@ -261,7 +294,7 @@ export default function CramPage() {
                     }`}
                 >
                     <Award className="w-4 h-4" />
-                    벼락치기 퀴즈 (20선)
+                    벼락치기 퀴즈
                 </button>
             </div>
 
@@ -381,12 +414,12 @@ export default function CramPage() {
                         <button
                             onClick={() => {
                                 setActiveTab("quiz");
-                                shuffleAndResetQuizzes();
+                                setQuizStarted(false);
                             }}
                             className="inline-flex items-center gap-2 bg-toss-blue text-white font-bold px-8 py-4 rounded-xl hover:bg-toss-blueHover shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 active:scale-95 text-sm"
                         >
                             <Zap className="w-4 h-4" />
-                            핵심 20문항 벼락치기 퀴즈 시작하기
+                            벼락치기 퀴즈 풀러가기
                             <ArrowRight className="w-4 h-4" />
                         </button>
                     </div>
@@ -397,9 +430,93 @@ export default function CramPage() {
             {/* TAB 2: CRAM QUIZ CONTENT */}
             {activeTab === "quiz" && (
                 <div className="space-y-6 animate-in fade-in duration-300">
-                    {shuffledQuizzes.length === 0 ? (
-                        <div className="text-center py-20 font-bold text-toss-gray600">
-                            문제를 불러오는 중입니다...
+                    {!quizStarted ? (
+                        /* Quiz Starter Config UI */
+                        <div className="bg-white p-6 md:p-8 rounded-toss border border-toss-gray200/60 shadow-md space-y-8 max-w-2xl mx-auto">
+                            <div className="border-b pb-4 flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-toss-blue animate-pulse" />
+                                <div>
+                                    <h2 className="text-xl font-bold text-toss-gray900">벼락치기 맞춤 학습 설정</h2>
+                                    <p className="text-xs text-toss-gray500 mt-0.5">
+                                        원하는 시대 범위와 문항 수를 선택하고 지금 바로 퀴즈를 풀며 정답을 각인해 보세요.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Section 1: Era Selector */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-toss-gray800 block">
+                                    1. 학습할 시대 선택
+                                </label>
+                                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 gap-2">
+                                    {ERA_OPTIONS.map((opt) => {
+                                        const isSelected = selectedEra === opt.id;
+                                        return (
+                                            <button
+                                                key={opt.id}
+                                                onClick={() => setSelectedEra(opt.id)}
+                                                className={`text-left p-3.5 border rounded-xl transition-all relative flex flex-col justify-between h-20 hover:border-toss-blue/40 ${
+                                                    isSelected
+                                                        ? "border-toss-blue bg-blue-50/30 ring-1 ring-toss-blue/20"
+                                                        : "border-toss-gray200 bg-white"
+                                                }`}
+                                            >
+                                                <span className={`text-xs md:text-sm font-bold ${
+                                                    isSelected ? "text-toss-blue" : "text-toss-gray800"
+                                                }`}>
+                                                    {opt.name}
+                                                </span>
+                                                <span className="text-[10px] font-semibold text-toss-gray400 self-end">
+                                                    준비 완료 ({opt.count}문항)
+                                                </span>
+                                                {isSelected && (
+                                                    <span className="absolute top-2 right-2.5 w-1.5 h-1.5 rounded-full bg-toss-blue" />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Section 2: Question Count Selector */}
+                            <div className="space-y-3">
+                                <label className="text-sm font-bold text-toss-gray800 block">
+                                    2. 풀고 싶은 문제 수 선택
+                                </label>
+                                <div className="flex border border-toss-gray200 p-1 bg-toss-gray100 rounded-xl max-w-sm">
+                                    {[10, 20, 50].map((count) => {
+                                        const isSelected = selectedCount === count;
+                                        return (
+                                            <button
+                                                key={count}
+                                                onClick={() => setSelectedCount(count)}
+                                                className={`flex-1 py-2 text-xs md:text-sm font-bold rounded-lg transition-all ${
+                                                    isSelected
+                                                        ? "bg-white text-toss-blue shadow-sm"
+                                                        : "text-toss-gray600 hover:text-toss-gray900"
+                                                }`}
+                                            >
+                                                {count}문항
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Quick Instructions info */}
+                            <div className="bg-toss-gray50 p-4 rounded-xl border border-toss-gray200/50 text-[11px] text-toss-gray500 leading-relaxed font-semibold">
+                                • 역사적 철저 검증을 거친 실제 한국사능력검정시험의 고품질 기출 변형 문제입니다.<br />
+                                • 문제를 푸는 즉시 상세 해설을 볼 수 있으며, 과거 풀이 기록이 있을 경우 오답 이력이 표시됩니다.
+                            </div>
+
+                            {/* Starter Button */}
+                            <button
+                                onClick={handleStartQuiz}
+                                className="w-full py-4 bg-toss-blue hover:bg-toss-blueHover text-white font-extrabold text-sm md:text-base rounded-xl transition-all shadow-sm hover:shadow-md transform active:scale-[0.99] flex items-center justify-center gap-2"
+                            >
+                                <Zap className="w-4 h-4" />
+                                퀴즈 시작하기
+                            </button>
                         </div>
                     ) : quizFinished ? (
                         /* Result Summary View */
@@ -408,9 +525,9 @@ export default function CramPage() {
                                 <Award className="w-10 h-10" />
                             </div>
                             <div className="space-y-2">
-                                <h2 className="text-2xl font-extrabold text-toss-gray900">벼락치기 퀴즈를 모두 완료했습니다!</h2>
+                                <h2 className="text-2xl font-extrabold text-toss-gray900">학습을 완료했습니다! 🎉</h2>
                                 <p className="text-toss-gray600 text-sm font-medium">
-                                    오늘 풀어본 문제가 실제 한능검 시험장에서도 든든한 무기가 될 것입니다.
+                                    [{ERA_OPTIONS.find(o => o.id === selectedEra)?.name}] 영역의 퀴즈 세션 결과입니다.
                                 </p>
                             </div>
 
@@ -421,30 +538,28 @@ export default function CramPage() {
                                     {score} <span className="text-lg font-bold text-toss-gray800">/ {shuffledQuizzes.length} 문항</span>
                                 </div>
                                 <span className="text-[10px] font-semibold text-toss-gray500 mt-1">
-                                    (정답률 {Math.round((score / shuffledQuizzes.length) * 100)}%)
+                                    (정답률 {shuffledQuizzes.length > 0 ? Math.round((score / shuffledQuizzes.length) * 100) : 0}%)
                                 </span>
                             </div>
 
                             <div className="text-xs text-toss-gray500 leading-relaxed font-semibold">
-                                틀린 문제는 다시 풀어보거나 요약 탭의 키워드를 다시 읽어 눈에 각인시키세요.<br />
-                                퀴즈를 다시 시작하면 문제가 무작위로 재구성(셔플)됩니다!
+                                틀린 문제는 요약 탭의 키워드를 다시 읽어 완벽히 숙지해 보세요.<br />
+                                아래 버튼을 눌러 동일 조건을 다시 풀거나, 다른 조건을 설정할 수 있습니다.
                             </div>
 
-                            <div className="flex gap-3 justify-center pt-2">
+                            <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
                                 <button
-                                    onClick={() => {
-                                        setActiveTab("summary");
-                                    }}
+                                    onClick={() => setQuizStarted(false)}
                                     className="px-5 py-3 rounded-xl border font-bold text-toss-gray800 hover:bg-toss-gray100 text-xs transition-all active:scale-95"
                                 >
-                                    다시 요약본 보러가기
+                                    다른 조건 설정하기
                                 </button>
                                 <button
-                                    onClick={shuffleAndResetQuizzes}
-                                    className="px-6 py-3 rounded-xl bg-toss-blue text-white font-bold hover:bg-toss-blueHover text-xs transition-all shadow-sm active:scale-95 flex items-center gap-1.5"
+                                    onClick={handleStartQuiz}
+                                    className="px-6 py-3 rounded-xl bg-toss-blue text-white font-bold hover:bg-toss-blueHover text-xs transition-all shadow-sm active:scale-95 flex items-center justify-center gap-1.5"
                                 >
                                     <RefreshCw className="w-3.5 h-3.5" />
-                                    새로운 배치로 다시 풀기
+                                    이 조건으로 다시 풀기
                                 </button>
                             </div>
                         </div>
@@ -454,20 +569,31 @@ export default function CramPage() {
                             
                             {/* Quiz Header & Progress Bar */}
                             <div className="bg-white p-5 rounded-toss border border-toss-gray200/60 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-extrabold text-toss-gray800 text-sm">
+                                <div className="flex items-center justify-between w-full sm:w-auto gap-4">
+                                    <span className="font-extrabold text-toss-gray800 text-sm whitespace-nowrap">
                                         진행 상황 ({currentQuizIndex + 1} / {shuffledQuizzes.length})
                                     </span>
+                                    <button
+                                        onClick={() => {
+                                            if (confirm("퀴즈 풀이를 중단하고 설정 화면으로 돌아가시겠습니까?")) {
+                                                setQuizStarted(false);
+                                            }
+                                        }}
+                                        className="text-xs font-bold text-toss-gray500 hover:text-toss-gray900 transition-colors flex items-center gap-1"
+                                    >
+                                        <ArrowLeft className="w-3.5 h-3.5" />
+                                        중단 및 설정 변경
+                                    </button>
                                 </div>
                                 <div className="flex items-center gap-3 w-full sm:w-2/3">
                                     <div className="w-full bg-toss-gray200 rounded-full h-2.5">
                                         <div 
                                             className="bg-toss-blue h-2.5 rounded-full transition-all duration-300" 
-                                            style={{ width: `${((currentQuizIndex + 1) / shuffledQuizzes.length) * 100}%` }}
+                                            style={{ width: `${shuffledQuizzes.length > 0 ? ((currentQuizIndex + 1) / shuffledQuizzes.length) * 100 : 0}%` }}
                                         />
                                     </div>
                                     <span className="text-xs font-bold text-toss-gray600 whitespace-nowrap">
-                                        {Math.round(((currentQuizIndex + 1) / shuffledQuizzes.length) * 100)}%
+                                        {shuffledQuizzes.length > 0 ? Math.round(((currentQuizIndex + 1) / shuffledQuizzes.length) * 100) : 0}%
                                     </span>
                                 </div>
                             </div>
@@ -479,17 +605,17 @@ export default function CramPage() {
                                 <div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
                                     <div className="flex items-center gap-2">
                                         <span className="bg-toss-blue/10 text-toss-blue text-[10px] px-2.5 py-1 rounded-md font-bold">
-                                            {currentQuestion.era}
+                                            {shuffledQuizzes[currentQuizIndex]?.era}
                                         </span>
                                         <span className="bg-toss-gray100 text-toss-gray600 text-[10px] px-2.5 py-1 rounded-md font-bold">
-                                            {currentQuestion.topic}
+                                            {shuffledQuizzes[currentQuizIndex]?.topic}
                                         </span>
                                     </div>
                                     
                                     {/* Personal Answer History */}
-                                    {userPreviousRecord && (
+                                    {shuffledQuizzes[currentQuizIndex] && quizRecords[shuffledQuizzes[currentQuizIndex].id] && (
                                         <div className="flex-shrink-0 animate-in fade-in zoom-in-95">
-                                            {userPreviousRecord === "correct" ? (
+                                            {quizRecords[shuffledQuizzes[currentQuizIndex].id] === "correct" ? (
                                                 <span className="inline-flex items-center gap-1 text-[11px] font-extrabold px-3 py-1 bg-green-50 text-green-600 border border-green-200 rounded-full">
                                                     <CheckCircle className="w-3.5 h-3.5" /> ✓ 지난 번에 맞혔던 문제에요
                                                 </span>
@@ -508,15 +634,27 @@ export default function CramPage() {
                                         <div className="w-9 h-9 rounded-xl bg-toss-blue text-white font-extrabold flex items-center justify-center text-sm shadow-sm flex-shrink-0">
                                             {currentQuizIndex + 1}
                                         </div>
-                                        <h3 className="text-base md:text-lg font-bold text-toss-gray900 whitespace-pre-wrap leading-relaxed">
-                                            {currentQuestion.contentText}
-                                        </h3>
+                                        <div className="flex-1 space-y-4">
+                                            <h3 className="text-base md:text-lg font-bold text-toss-gray900 whitespace-pre-wrap leading-relaxed">
+                                                {shuffledQuizzes[currentQuizIndex]?.contentText}
+                                            </h3>
+                                            {shuffledQuizzes[currentQuizIndex]?.imagePath && (
+                                                <div className="mt-3 flex justify-center bg-toss-gray50 p-4 rounded-2xl border border-toss-gray200/50 max-w-sm mx-auto shadow-sm">
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={shuffledQuizzes[currentQuizIndex].imagePath}
+                                                        alt="유물 및 자료 이미지"
+                                                        className="max-h-52 object-contain rounded-lg"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Selection Choices */}
                                 <div className="grid grid-cols-1 gap-3 pt-2">
-                                    {currentQuestion.choices.map((choice, i) => {
+                                    {shuffledQuizzes[currentQuizIndex]?.choices.map((choice, i) => {
                                         const choiceNum = i + 1;
                                         const isSelected = selectedAnswer === choiceNum;
                                         
@@ -527,10 +665,10 @@ export default function CramPage() {
                                         }
 
                                         if (isEvaluated) {
-                                            if (choiceNum === currentQuestion.answer) {
+                                            if (choiceNum === shuffledQuizzes[currentQuizIndex]?.answer) {
                                                 // Correct answer highlight
                                                 btnStyle = "border-green-500 bg-green-50 text-green-700 font-bold border-2";
-                                            } else if (isSelected && choiceNum !== currentQuestion.answer) {
+                                            } else if (isSelected && choiceNum !== shuffledQuizzes[currentQuizIndex]?.answer) {
                                                 // Wrong selected choice
                                                 btnStyle = "border-red-400 bg-red-50 text-red-600 line-through decoration-red-300 font-semibold border-2";
                                             } else {
@@ -549,8 +687,8 @@ export default function CramPage() {
                                                 <div 
                                                     className={`w-6 h-6 rounded-full border-2 flex items-center justify-center font-bold text-xs flex-shrink-0 transition-colors
                                                         ${isSelected ? "border-toss-blue text-toss-blue" : "border-toss-gray300 text-toss-gray500"}
-                                                        ${isEvaluated && choiceNum === currentQuestion.answer ? "border-green-600 bg-green-600 text-white" : ""}
-                                                        ${isEvaluated && isSelected && choiceNum !== currentQuestion.answer ? "border-red-600 bg-red-600 text-white" : ""}
+                                                        ${isEvaluated && choiceNum === shuffledQuizzes[currentQuizIndex]?.answer ? "border-green-600 bg-green-600 text-white" : ""}
+                                                        ${isEvaluated && isSelected && choiceNum !== shuffledQuizzes[currentQuizIndex]?.answer ? "border-red-600 bg-red-600 text-white" : ""}
                                                     `}
                                                 >
                                                     {choiceNum}
@@ -612,9 +750,9 @@ export default function CramPage() {
                                         <div className="flex items-center gap-1.5 font-bold">
                                             <span>실전 정답:</span>
                                             <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded font-extrabold">
-                                                {currentQuestion.answer}번
+                                                {shuffledQuizzes[currentQuizIndex]?.answer}번
                                             </span>
-                                            {selectedAnswer === currentQuestion.answer ? (
+                                            {selectedAnswer === shuffledQuizzes[currentQuizIndex]?.answer ? (
                                                 <span className="text-green-600 text-xs font-bold">(맞혔습니다! 🥳)</span>
                                             ) : (
                                                 <span className="text-red-500 text-xs font-bold">(틀렸습니다. 다시 기억해 두세요!)</span>
@@ -622,7 +760,7 @@ export default function CramPage() {
                                         </div>
 
                                         <div className="bg-toss-gray50 p-4 rounded-xl border border-toss-gray200/40 text-toss-gray700 leading-relaxed text-xs">
-                                            {currentQuestion.explanation}
+                                            {shuffledQuizzes[currentQuizIndex]?.explanation}
                                         </div>
                                     </div>
                                 </div>

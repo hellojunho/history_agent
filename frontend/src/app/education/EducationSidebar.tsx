@@ -14,7 +14,7 @@ export default function EducationSidebar() {
             <div className="bg-white rounded-toss border border-toss-gray200/80 p-5 sticky top-28 shadow-sm">
                 <h2 className="text-base font-extrabold mb-4 pb-3 border-b border-toss-gray100 flex items-center gap-2 text-toss-gray900">
                     <BookOpen className="w-4.5 h-4.5 text-toss-blue" />
-                    시대별 교육자료
+                    시대별 학습자료
                 </h2>
                 <nav className="space-y-1">
                     {ERA_LIST.map((era) => {
