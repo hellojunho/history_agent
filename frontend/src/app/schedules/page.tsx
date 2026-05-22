@@ -14,6 +14,7 @@ interface ExamSchedule {
     resultDate: string;
     status: "진행 중" | "마감";
     isSubscribed: boolean;
+    applyUrl: string;
 }
 
 export default function SchedulesPage() {
@@ -164,7 +165,7 @@ export default function SchedulesPage() {
                                         {/* 회차 타이틀 (클릭 시 공식 원서접수처 이동) */}
                                         <td className="py-5 px-6 font-bold text-gray-800 text-sm">
                                             <a
-                                                href="https://www.historyexam.go.kr"
+                                                href={schedule.applyUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 title="한능검 공식 접수처 새 창 열기"

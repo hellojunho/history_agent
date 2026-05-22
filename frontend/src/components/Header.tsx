@@ -59,6 +59,7 @@ export default function Header() {
                 )}
                 <Link href="/education" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">교육자료</Link>
                 <Link href="/cbt" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">CBT 기출문제</Link>
+                <Link href="/cram" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">벼락치기(D-1)</Link>
                 <Link href="/schedules" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">시험 일정</Link>
                 {isLoggedIn && (
                     <Link href="/mypage" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">마이페이지</Link>

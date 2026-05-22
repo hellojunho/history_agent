@@ -34,7 +34,7 @@ export default function Page(): JSX.Element {
             {/* Menu Cards */}
             <div className="space-y-4">
                 <h3 className="text-lg font-bold text-toss-gray800 px-1">추천 서비스</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                     {/* Card 1 */}
                     <Link href="/education" className="bg-white p-6 rounded-toss border border-toss-gray200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
                         <div className="space-y-4">
@@ -73,7 +73,26 @@ export default function Page(): JSX.Element {
                         </div>
                     </Link>
 
-                    {/* Card 3 */}
+                    {/* Card 3 (Cram) */}
+                    <Link href="/cram" className="bg-white p-6 rounded-toss border border-toss-gray200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
+                        <div className="space-y-4">
+                            <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                                <Sparkles className="w-6 h-6" />
+                            </div>
+                            <div className="space-y-1">
+                                <h4 className="font-extrabold text-lg text-toss-gray900">벼락치기 (D-1)</h4>
+                                <p className="text-toss-gray600 text-xs leading-relaxed">
+                                    시험 하루 전 초고효율 정리! 시대 핵심 다이어그램과 20문항의 엄선 퀴즈로 빠르게 극대화하세요.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="mt-6 flex items-center gap-1 text-rose-500 font-bold text-xs">
+                            초고효율 공부하기
+                            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Link>
+
+                    {/* Card 4 */}
                     <Link href="/schedules" className="bg-white p-6 rounded-toss border border-toss-gray200/60 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
                         <div className="space-y-4">
                             <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">

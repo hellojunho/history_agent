@@ -22,4 +22,7 @@ export class ExamSchedule {
 
     @Column({ type: "timestamp" })
     resultDate!: Date; // 합격자 발표일
+
+    @Column({ type: "varchar", default: "https://www.historyexam.go.kr/" })
+    applyUrl!: string; // 원서 접수 URL
 }

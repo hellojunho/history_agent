@@ -4,8 +4,18 @@ import { ExamSchedule } from "@/entities/ExamSchedule";
 import { ExamNotification } from "@/entities/ExamNotification";
 import { verifyToken } from "@/lib/auth";
 
-// 2024~2025년 과거 시험 일정 고정 시드 데이터 (공식 사이트에서 만료되어 나오지 않는 과거 기록 보존용)
-const pastSeedData = [
+interface RawScheduleData {
+    round: number;
+    year: number;
+    registerStart: Date;
+    registerEnd: Date;
+    examDate: Date;
+    resultDate: Date;
+    applyUrl: string;
+}
+
+// 2024~2025년 과거 시험 일정 고정 시드 데이터
+const pastSeedData: RawScheduleData[] = [
     {
         round: 69,
         year: 2024,
@@ -13,6 +23,7 @@ const pastSeedData = [
         registerEnd: new Date("2024-01-23T17:00:00+09:00"),
         examDate: new Date("2024-02-17T10:00:00+09:00"),
         resultDate: new Date("2024-02-29T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 70,
@@ -21,6 +32,7 @@ const pastSeedData = [
         registerEnd: new Date("2024-04-30T17:00:00+09:00"),
         examDate: new Date("2024-05-25T10:00:00+09:00"),
         resultDate: new Date("2024-06-05T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 71,
@@ -29,6 +41,7 @@ const pastSeedData = [
         registerEnd: new Date("2024-07-16T17:00:00+09:00"),
         examDate: new Date("2024-08-10T10:00:00+09:00"),
         resultDate: new Date("2024-08-22T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 72,
@@ -37,6 +50,7 @@ const pastSeedData = [
         registerEnd: new Date("2024-09-17T17:00:00+09:00"),
         examDate: new Date("2024-10-20T10:00:00+09:00"),
         resultDate: new Date("2024-10-31T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 73,
@@ -45,6 +59,7 @@ const pastSeedData = [
         registerEnd: new Date("2025-01-14T17:00:00+09:00"),
         examDate: new Date("2025-02-16T10:00:00+09:00"),
         resultDate: new Date("2025-02-27T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 74,
@@ -53,6 +68,7 @@ const pastSeedData = [
         registerEnd: new Date("2025-04-29T17:00:00+09:00"),
         examDate: new Date("2025-05-24T10:00:00+09:00"),
         resultDate: new Date("2025-06-05T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 75,
@@ -61,6 +77,7 @@ const pastSeedData = [
         registerEnd: new Date("2025-07-15T17:00:00+09:00"),
         examDate: new Date("2025-08-09T10:00:00+09:00"),
         resultDate: new Date("2025-08-21T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
     {
         round: 76,
@@ -69,23 +86,67 @@ const pastSeedData = [
         registerEnd: new Date("2025-09-23T17:00:00+09:00"),
         examDate: new Date("2025-10-18T10:00:00+09:00"),
         resultDate: new Date("2025-10-31T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
     },
 ];
 
-interface RawScheduleData {
-    round: number;
-    year: number;
-    registerStart: Date;
-    registerEnd: Date;
-    examDate: Date;
-    resultDate: Date;
-}
+// 2026년 일정 대비용 예비 시드 데이터 (크롤링 실패 시 활용)
+const fallbackSeedData2026: RawScheduleData[] = [
+    {
+        round: 77,
+        year: 2026,
+        registerStart: new Date("2026-01-06T10:00:00+09:00"),
+        registerEnd: new Date("2026-01-13T17:00:00+09:00"),
+        examDate: new Date("2026-02-07T10:00:00+09:00"),
+        resultDate: new Date("2026-02-20T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
+    },
+    {
+        round: 78,
+        year: 2026,
+        registerStart: new Date("2026-04-21T10:00:00+09:00"),
+        registerEnd: new Date("2026-04-28T17:00:00+09:00"),
+        examDate: new Date("2026-05-23T10:00:00+09:00"),
+        resultDate: new Date("2026-06-05T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
+    },
+    {
+        round: 79,
+        year: 2026,
+        registerStart: new Date("2026-07-07T10:00:00+09:00"),
+        registerEnd: new Date("2026-07-14T17:00:00+09:00"),
+        examDate: new Date("2026-08-09T10:00:00+09:00"),
+        resultDate: new Date("2026-08-21T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
+    },
+    {
+        round: 80,
+        year: 2026,
+        registerStart: new Date("2026-09-15T10:00:00+09:00"),
+        registerEnd: new Date("2026-09-22T17:00:00+09:00"),
+        examDate: new Date("2026-10-17T10:00:00+09:00"),
+        resultDate: new Date("2026-10-30T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
+    },
+    {
+        round: 81,
+        year: 2026,
+        registerStart: new Date("2026-11-03T10:00:00+09:00"),
+        registerEnd: new Date("2026-11-10T17:00:00+09:00"),
+        examDate: new Date("2026-11-28T10:00:00+09:00"),
+        resultDate: new Date("2026-12-11T10:00:00+09:00"),
+        applyUrl: "https://www.historyexam.go.kr/"
+    }
+];
 
 // 공식 웹사이트 시험일정 페이지에서 직접 크롤링 및 파싱
 async function fetchAndParseOfficialSchedules(): Promise<RawScheduleData[]> {
     try {
         console.log("🌐 [Schedule Crawler] Requesting official exam schedule page...");
-        const res = await fetch("https://www.historyexam.go.kr/pageLink.do?link=examSchedule", {
+        // netfunnel_key 파라미터는 일회성이므로 제외하고 안전하게 다이렉트 호출
+        const targetUrl = "https://www.historyexam.go.kr/pageLink.do?link=examSchedule";
+        
+        const res = await fetch(targetUrl, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             },
@@ -148,7 +209,7 @@ async function fetchAndParseOfficialSchedules(): Promise<RawScheduleData[]> {
                         targetText = isEnd ? parts[1] : parts[0];
                     }
 
-                    // 정규식: 연도, 월, 일, 시간, 분 추출
+                    // 정규식: 연도, 월, 일, 시간, 분 추출 (괄호 안 영어/한글 요일 지원)
                     const dateRegex = /(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일(?:\([A-Za-z가-힣]+\))?(?:\s*(\d{1,2}):(\d{1,2}))?/;
                     const dateMatch = targetText.match(dateRegex);
                     if (dateMatch) {
@@ -171,13 +232,15 @@ async function fetchAndParseOfficialSchedules(): Promise<RawScheduleData[]> {
                 const resultDate = parseDate(tds[4], false);
 
                 if (registerStart && registerEnd && examDate && resultDate) {
+                    const year = examDate.getFullYear();
                     parsedSchedules.push({
                         round,
-                        year: examDate.getFullYear(),
+                        year,
                         registerStart,
                         registerEnd,
                         examDate,
-                        resultDate
+                        resultDate,
+                        applyUrl: "https://www.historyexam.go.kr/"
                     });
                 }
             }
@@ -191,7 +254,7 @@ async function fetchAndParseOfficialSchedules(): Promise<RawScheduleData[]> {
     }
 }
 
-// GET: 전체 시험 일정 목록 조회 (파싱 및 2024~2025 과거 데이터 결합 및 동적 상태 포함)
+// GET: 전체 시험 일정 목록 조회 (과거 시드 + 크롤링 병합 및 동적 상태 계산)
 export async function GET(request: Request): Promise<NextResponse> {
     try {
         const dataSource = await initializeDatabase();
@@ -200,26 +263,31 @@ export async function GET(request: Request): Promise<NextResponse> {
         // DB 일정 데이터 확인
         let schedules = await scheduleRepo.find({ order: { round: "ASC" } });
 
-        // 데이터가 69회부터 81회 이상까지 온전하게 있지 않은 경우 (개수 부족이거나 mock 데이터인 경우)
-        // 공식 사이트 파싱 및 pastSeedData 머지하여 새로 구성
-        const hasMockData = schedules.some(s => s.round >= 73 && s.round <= 76 && s.year === 2026); // 과거 회차인데 2026년으로 되어 있던 잔재
-        const needsSync = schedules.length < 13 || hasMockData;
+        // 데이터가 69회~81회 총 13개 레코드로 채워지지 않았거나, 데이터 상태가 유효하지 않으면 대대적인 동기화 가동
+        const hasInvalidData = schedules.some(s => s.round >= 73 && s.round <= 76 && s.year === 2026); // 구버전 오염 데이터 감지
+        const needsSync = schedules.length < 13 || hasInvalidData;
 
         if (needsSync) {
-            console.log("🔄 [Schedule API] Syncing schedules from past seed data & official web site...");
+            console.log("🔄 [Schedule API] Syncing 2024~2026 schedules from past seed data & official web site...");
             
-            // 공식 사이트 데이터 파싱 시도
-            const officialSchedules = await fetchAndParseOfficialSchedules();
+            // 1. 공식 사이트 실시간 크롤링 및 파싱 가동
+            let officialSchedules = await fetchAndParseOfficialSchedules();
 
-            // pastSeedData와 officialSchedules 병합 (round 기준 중복 제거)
+            // 2. 크롤러 네트워크 차단 등으로 2026년 데이터가 완전히 안 뽑혔을 경우를 위한 fallback 머지 설계
+            if (officialSchedules.length === 0) {
+                console.warn("⚠️ [Schedule API] Official site parser returned empty. Using 2026 fallback seed data...");
+                officialSchedules = fallbackSeedData2026;
+            }
+
+            // 3. pastSeedData와 officialSchedules 병합 (round 기준 중복 제거 및 덮어쓰기)
             const mergedMap = new Map<number, RawScheduleData>();
             
-            // 과거 고정 시드 먼저 투입
+            // 과거 고정 시드 먼저 주입
             pastSeedData.forEach(item => {
                 mergedMap.set(item.round, item);
             });
 
-            // 공식 사이트에서 긁어온 것 덮어쓰거나 추가 (주로 2026년 이후 최신 일정)
+            // 실시간 공식 파싱 데이터 덮어쓰기 및 추가
             officialSchedules.forEach(item => {
                 mergedMap.set(item.round, item);
             });
@@ -227,9 +295,8 @@ export async function GET(request: Request): Promise<NextResponse> {
             const mergedList = Array.from(mergedMap.values()).sort((a, b) => a.round - b.round);
 
             if (mergedList.length > 0) {
-                // 기존 일정 데이터 안전하게 전면 제거
+                // 기존 스케줄 데이터 완전 청소 후 재생성 저장
                 await scheduleRepo.clear();
-                
                 const entities = scheduleRepo.create(mergedList);
                 await scheduleRepo.save(entities);
                 schedules = await scheduleRepo.find({ order: { round: "ASC" } });
@@ -249,12 +316,10 @@ export async function GET(request: Request): Promise<NextResponse> {
             }
         }
 
-        // 실시간으로 KST 기준 시험일정과 현재 시각을 비교하여 status 부여
-        // now는 KST 기준의 한국 시각을 기준으로 Date 연산을 수행해야 함
+        // KST 기준 현재시각과 비교하여 실시간 상태 부여
         const now = new Date();
 
         let result = schedules.map(s => {
-            // 시험일 종료 여부에 따른 상태 결정
             const examDateTime = new Date(s.examDate).getTime();
             const status = now.getTime() > examDateTime ? "마감" : "진행 중";
 
@@ -282,4 +347,3 @@ export async function GET(request: Request): Promise<NextResponse> {
         return NextResponse.json({ message: errorMessage }, { status: 500 });
     }
 }
-
