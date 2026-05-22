@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Sparkles, X, ChevronRight, CheckCircle2, HelpCircle } from "lucide-react";
+import { Sparkles, X, ChevronRight, CheckCircle2, HelpCircle, Printer } from "lucide-react";
 import MarkdownViewer from "./MarkdownViewer";
 import { ERA_SUMMARIES } from "../../data/eraSummaries";
 import { HISTORY_QUIZZES, HistoryQuiz } from "../../data/historyQuizzes";
@@ -14,6 +14,25 @@ interface Props {
 export default function SummaryViewer({ content, eraId }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const summary = ERA_SUMMARIES[eraId];
+    
+    // 마크다운 최상단 대제목(# 제목) 추출 및 본문 분리
+    let title = "학습자료";
+    let bodyContent = content;
+
+    if (content.startsWith("# ")) {
+        const firstLineEnd = content.search(/\r?\n/);
+        if (firstLineEnd !== -1) {
+            title = content.substring(2, firstLineEnd).trim();
+            bodyContent = content.substring(firstLineEnd).trim();
+        } else {
+            title = content.substring(2).trim();
+            bodyContent = "";
+        }
+    }
+
+    const handlePrint = () => {
+        window.print();
+    };
     
     // Dynamic multiple-choice quiz state
     const [currentQuizzes, setCurrentQuizzes] = useState<HistoryQuiz[]>([]);
@@ -86,8 +105,22 @@ export default function SummaryViewer({ content, eraId }: Props) {
 
     return (
         <div className="space-y-12">
+            {/* Title & PDF Print Button Header Line */}
+            <div className="flex justify-between items-center border-b border-toss-gray200 pb-4 mb-8">
+                <h1 className="text-3xl font-extrabold text-toss-gray900 tracking-tight">
+                    {title}
+                </h1>
+                <button
+                    onClick={handlePrint}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-toss-blue bg-toss-blue/10 rounded-2xl hover:bg-toss-blue/20 transition-all active:scale-[0.95] no-print shadow-sm"
+                >
+                    <Printer className="w-4 h-4" />
+                    PDF 출력
+                </button>
+            </div>
+
             {/* Main Markdown Content */}
-            <MarkdownViewer content={content} />
+            <MarkdownViewer content={bodyContent} />
 
             {/* Bottom Floating/Fixed Summary Action Card */}
             <div className="mt-16 bg-gradient-to-r from-toss-blue/5 to-blue-600/5 border border-toss-blue/20 rounded-toss p-8 text-center space-y-4 shadow-sm">
@@ -330,6 +363,42 @@ export default function SummaryViewer({ content, eraId }: Props) {
                 }
                 .text-toss-gray950 {
                     color: #191f28;
+                }
+
+                /* PDF 인쇄 전용 스타일 시트 최적화 */
+                @media print {
+                    /* 불필요한 UI 비노출 */
+                    .no-print,
+                    header,
+                    footer,
+                    nav,
+                    aside,
+                    .mt-16,
+                    button,
+                    .bg-gradient-to-r {
+                        display: none !important;
+                    }
+                    
+                    /* 전체 레이아웃 리셋 */
+                    body, html, main, #__next, .prose {
+                        background: white !important;
+                        color: black !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        box-shadow: none !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                    }
+
+                    /* 페이지 걸침 오류(잘림) 제어 */
+                    h1, h2, h3, h4, h5 {
+                        page-break-after: avoid;
+                        page-break-inside: avoid;
+                    }
+                    
+                    img, table, pre, blockquote, .prose p, tr {
+                        page-break-inside: avoid;
+                    }
                 }
             `}</style>
         </div>
