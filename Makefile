@@ -53,3 +53,6 @@ start-admin:
 	@echo "관리자 자동 로그인 브라우저를 오픈합니다..."
 	@open "http://localhost:11000/auth/login?autoLogin=admin"
 
+init-db:
+	@bash db/init_db.sh
+
