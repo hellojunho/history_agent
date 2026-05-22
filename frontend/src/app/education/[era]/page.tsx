@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import MarkdownViewer from "../MarkdownViewer";
+import SummaryViewer from "../SummaryViewer";
 import { ERA_LIST } from "../eraList";
 
 export async function generateStaticParams() {
@@ -47,7 +47,7 @@ export default async function EraPage({ params }: { params: { era: string } }) {
 
     return (
         <div>
-            <MarkdownViewer content={combinedContent} />
+            <SummaryViewer content={combinedContent} eraId={eraId} />
         </div>
     );
 }
