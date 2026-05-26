@@ -11,7 +11,8 @@ export async function generateStaticParams() {
 
 export default async function EraPage({ params }: { params: { era: string } }) {
     const eraId = params.era;
-    const eraTitle = ERA_LIST.find((e) => e.id === eraId)?.title || "시대 정보 없음";
+    const currentEra = ERA_LIST.find((e) => e.id === eraId);
+    const eraTitle = currentEra?.title || "시대 정보 없음";
     
     // Read all files in the era directory
     const dirPath = path.join(process.cwd(), "src/data/history_deep", eraId);
@@ -46,7 +47,29 @@ export default async function EraPage({ params }: { params: { era: string } }) {
     }
 
     return (
-        <div>
+        <div className="space-y-8">
+            <section className="overflow-hidden rounded-[30px] border border-blue-100 bg-[linear-gradient(135deg,rgba(37,99,235,0.08),rgba(255,255,255,0.96)_42%,rgba(245,158,11,0.08))] p-6 sm:p-7">
+                <span className="section-label">Era Overview</span>
+                <div className="mt-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="space-y-2">
+                        <h1 className="text-3xl font-black tracking-[-0.04em] text-slate-950 sm:text-4xl">{eraTitle}</h1>
+                        <p className="max-w-2xl text-sm leading-7 text-slate-600">
+                            {currentEra?.shortLabel || eraTitle} 파트의 핵심 흐름을 먼저 읽고, 하단 요약과 기출 퀴즈로 바로 기억을 고정하세요.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-sm sm:max-w-sm sm:grid-cols-2">
+                        <div className="rounded-2xl border border-white/80 bg-white/85 p-4">
+                            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">Format</p>
+                            <p className="mt-2 font-black text-slate-950">정치 · 경제 · 사회 · 문화</p>
+                        </div>
+                        <div className="rounded-2xl border border-white/80 bg-white/85 p-4">
+                            <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-blue-700">Review</p>
+                            <p className="mt-2 font-black text-slate-950">요약 + 3문항 점검</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <SummaryViewer content={combinedContent} eraId={eraId} />
         </div>
     );

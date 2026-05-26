@@ -3,10 +3,10 @@ import EducationSidebar from "./EducationSidebar";
 
 export default function EducationLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row gap-8 mt-6 pb-16 px-4">
+        <div className="page-container grid gap-6 pb-16 pt-4 lg:grid-cols-[320px_minmax(0,1fr)] lg:pt-6">
             <EducationSidebar />
-            <main className="flex-1 min-w-0">
-                <div className="bg-white rounded-toss shadow-sm border border-toss-gray200/80 p-6 md:p-12 relative overflow-hidden">
+            <main className="min-w-0">
+                <div className="glass-panel animated-border overflow-hidden px-5 py-6 sm:px-8 sm:py-8 lg:px-10">
                     {children}
                 </div>
             </main>

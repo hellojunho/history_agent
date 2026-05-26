@@ -2,83 +2,187 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpen, CalendarDays, GraduationCap, LayoutDashboard, LogOut, Menu, PenSquare, Sparkles, UserCircle2, X } from "lucide-react";
+
+const NAV_ITEMS = [
+    { href: "/education", label: "학습자료", icon: BookOpen },
+    { href: "/cbt", label: "CBT", icon: GraduationCap },
+    { href: "/cram", label: "벼락치기", icon: Sparkles },
+    { href: "/schedules", label: "시험 일정", icon: CalendarDays },
+    { href: "/inquiries", label: "문의", icon: PenSquare },
+];
 
 export default function Header() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const pathname = usePathname();
     const router = useRouter();
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
-        if (token) {
-            setIsLoggedIn(true);
-            try {
-                // Decode JWT to check role
-                const payloadStr = token.split(".")[1];
-                if (payloadStr) {
-                    const base64Url = payloadStr.replace(/-/g, "+").replace(/_/g, "/");
-                    const base64 = base64Url + "=".repeat((4 - (base64Url.length % 4)) % 4);
-                    const decodedPayload = decodeURIComponent(
-                        atob(base64)
-                            .split("")
-                            .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-                            .join("")
-                    );
-                    const payload = JSON.parse(decodedPayload);
-                    if (payload.role === "admin") {
-                        setIsAdmin(true);
-                    }
-                }
-            } catch (e) {
-                console.error("Failed to parse token", e);
-            }
+        if (!token) {
+            setIsAdmin(false);
+            setIsLoggedIn(false);
+            return;
         }
-    }, []);
+
+        setIsLoggedIn(true);
+        try {
+            const payloadStr = token.split(".")[1];
+            if (!payloadStr) return;
+
+            const base64Url = payloadStr.replace(/-/g, "+").replace(/_/g, "/");
+            const base64 = base64Url + "=".repeat((4 - (base64Url.length % 4)) % 4);
+            const decodedPayload = decodeURIComponent(
+                atob(base64)
+                    .split("")
+                    .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join("")
+            );
+            const payload = JSON.parse(decodedPayload);
+            setIsAdmin(payload.role === "admin");
+        } catch (error) {
+            console.error("Failed to parse token", error);
+        }
+    }, [pathname]);
+
+    useEffect(() => {
+        setIsMenuOpen(false);
+    }, [pathname]);
 
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         setIsLoggedIn(false);
         setIsAdmin(false);
+        setIsMenuOpen(false);
         router.push("/");
     };
 
     return (
-        <header className="border-b border-toss-gray200/80 px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50 transition-all">
-            <h1 className="text-xl font-bold text-toss-blue tracking-tight hover:opacity-80 transition-opacity">
-                <Link href="/" className="flex items-center gap-1.5 group">
-                    <span className="inline-flex items-center justify-center bg-toss-blue text-white font-black text-[10px] px-2 h-7 rounded-xl shadow-sm transition-transform group-hover:scale-105 active:scale-95 leading-none">
-                        ㅎㄴㄱ
-                    </span>
-                    <span className="font-extrabold text-toss-gray900 text-lg tracking-tight group-hover:text-toss-blue transition-colors">ㅎㄴㄱ</span>
-                </Link>
-            </h1>
-            <nav className="flex items-center gap-2">
-                {isAdmin && (
-                    <Link href="/admin" className="text-red-500 font-bold hover:bg-red-50 px-3 py-1.5 rounded-xl transition-all text-sm">관리자</Link>
-                )}
-                <Link href="/education" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">학습자료</Link>
-                <Link href="/cartoon" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">만화로 보는 역사</Link>
-                {isAdmin && (
-                    <Link href="/cbt" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">CBT 기출문제 (개발중)</Link>
-                )}
-                <Link href="/cram" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">벼락치기(D-1)</Link>
-                <Link href="/schedules" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">시험 일정</Link>
-                <Link href="/inquiries" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">문의사항</Link>
-                {isLoggedIn && (
-                    <Link href="/mypage" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">마이페이지</Link>
-                )}
-                <div className="border-l border-toss-gray200 h-4 mx-2" />
-                {isLoggedIn ? (
-                    <button onClick={handleLogout} className="px-4 py-2 rounded-xl bg-toss-gray200 text-toss-gray800 hover:bg-toss-gray300 text-xs font-bold transition-all">
-                        로그아웃
-                    </button>
-                ) : (
-                    <Link href="/auth/login" className="px-4 py-2 rounded-xl bg-toss-blue text-white hover:bg-toss-blueHover text-xs font-bold transition-all shadow-sm">
-                        로그인
-                    </Link>
-                )}
-            </nav>
+        <header className="sticky top-0 z-50 px-3 py-3 sm:px-4">
+            <div className="page-container">
+                <div className="glass-panel animated-border px-4 py-3 sm:px-5">
+                    <div className="flex items-center justify-between gap-4">
+                        <Link href="/" className="group flex min-w-0 items-center gap-3">
+                            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-blue-400 text-sm font-black text-white shadow-lg shadow-blue-500/25">
+                                ㅎㄴㄱ
+                            </span>
+                            <div className="min-w-0">
+                                <p className="truncate text-[15px] font-black tracking-[-0.03em] text-slate-950">한능검 학습 스튜디오</p>
+                                <p className="truncate text-xs font-semibold text-slate-500">이해, 암기, 복습을 한 흐름으로 묶은 한국사 학습 서비스</p>
+                            </div>
+                        </Link>
+
+                        <nav className="hidden items-center gap-1 lg:flex">
+                            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                                const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+                                return (
+                                    <Link
+                                        key={href}
+                                        href={href}
+                                        className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold transition-all ${
+                                            isActive
+                                                ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                                                : "text-slate-600 hover:bg-white hover:text-slate-950"
+                                        }`}
+                                    >
+                                        <Icon className="h-4 w-4" />
+                                        {label}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        <div className="hidden items-center gap-2 lg:flex">
+                            {isAdmin && (
+                                <Link href="/admin" className="app-button-secondary px-4 py-2.5 text-xs">
+                                    <LayoutDashboard className="h-4 w-4" />
+                                    관리자
+                                </Link>
+                            )}
+                            {isLoggedIn && (
+                                <Link href="/mypage" className="app-button-secondary px-4 py-2.5 text-xs">
+                                    <UserCircle2 className="h-4 w-4" />
+                                    마이페이지
+                                </Link>
+                            )}
+                            {isLoggedIn ? (
+                                <button onClick={handleLogout} className="app-button-secondary px-4 py-2.5 text-xs">
+                                    <LogOut className="h-4 w-4" />
+                                    로그아웃
+                                </button>
+                            ) : (
+                                <Link href="/auth/login" className="app-button-primary px-4 py-2.5 text-xs">
+                                    학습 시작
+                                </Link>
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsMenuOpen((prev) => !prev)}
+                            className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/80 text-slate-700 transition hover:bg-white lg:hidden"
+                            aria-label="메뉴 열기"
+                            aria-expanded={isMenuOpen}
+                        >
+                            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        </button>
+                    </div>
+
+                    {isMenuOpen && (
+                        <div className="mt-4 space-y-4 border-t border-slate-200/70 pt-4 lg:hidden">
+                            <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                                    const isActive = pathname === href || pathname.startsWith(`${href}/`);
+
+                                    return (
+                                        <Link
+                                            key={href}
+                                            href={href}
+                                            className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
+                                                isActive
+                                                    ? "bg-blue-600 text-white"
+                                                    : "bg-white/70 text-slate-700 hover:bg-white"
+                                            }`}
+                                        >
+                                            <Icon className="h-4 w-4" />
+                                            {label}
+                                        </Link>
+                                    );
+                                })}
+                            </nav>
+
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                {isAdmin && (
+                                    <Link href="/admin" className="app-button-secondary">
+                                        <LayoutDashboard className="h-4 w-4" />
+                                        관리자
+                                    </Link>
+                                )}
+                                {isLoggedIn && (
+                                    <Link href="/mypage" className="app-button-secondary">
+                                        <UserCircle2 className="h-4 w-4" />
+                                        마이페이지
+                                    </Link>
+                                )}
+                                {isLoggedIn ? (
+                                    <button onClick={handleLogout} className="app-button-secondary">
+                                        <LogOut className="h-4 w-4" />
+                                        로그아웃
+                                    </button>
+                                ) : (
+                                    <Link href="/auth/login" className="app-button-primary">
+                                        학습 시작
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         </header>
     );
 }

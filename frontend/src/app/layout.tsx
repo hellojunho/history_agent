@@ -10,9 +10,9 @@ export default function RootLayout({
 }): JSX.Element {
     return (
         <html lang="ko">
-            <body>
+            <body className="app-shell">
                 <Header />
-                <main className="max-w-7xl mx-auto p-4">
+                <main className="relative z-10 flex-1 pb-16">
                     {children}
                 </main>
             </body>
