@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { Sparkles, X, ChevronRight, CheckCircle2, HelpCircle } from "lucide-react";
 import MarkdownViewer from "./MarkdownViewer";
 import { ERA_SUMMARIES } from "../../data/eraSummaries";
@@ -15,6 +15,8 @@ interface Props {
 
 export default function SummaryViewer({ content, eraId }: Props) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams ? searchParams.get("search") : "";
     const [mounted, setMounted] = useState(false);
     
     // 목차(TOC) 상태 및 활성 인덱스 상태
@@ -39,11 +41,55 @@ export default function SummaryViewer({ content, eraId }: Props) {
         }
     }, [router]);
 
+    // URL 검색어(?search=키워드) 감지 및 실시간 하이라이트 & 포커스 안내 로직
+    useEffect(() => {
+        if (!mounted || !searchQuery) return;
+
+        const timer = setTimeout(() => {
+            const elements = document.querySelectorAll(".prose p, .prose li, .prose h3, .prose h2, .prose strong");
+            let targetEl: HTMLElement | null = null;
+
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i] as HTMLElement;
+                if (el.textContent && el.textContent.toLowerCase().includes(searchQuery.toLowerCase())) {
+                    targetEl = el;
+                    break;
+                }
+            }
+
+            if (targetEl) {
+                const offset = 120;
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = targetEl.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+
+                targetEl.style.transition = "all 0.5s ease";
+                targetEl.style.backgroundColor = "#fef08a";
+                targetEl.style.boxShadow = "0 0 0 8px #fef08a";
+                targetEl.style.borderRadius = "8px";
+
+                setTimeout(() => {
+                    if (targetEl) {
+                        targetEl.style.backgroundColor = "transparent";
+                        targetEl.style.boxShadow = "none";
+                    }
+                }, 3500);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, mounted]);
+
     // 렌더링된 H2 헤더 수집 및 고유 ID 자동 부여
     useEffect(() => {
         if (!mounted) return;
         
-        // Next.js hydration 안정성을 위해 짧은 지연 처리
         const timer = setTimeout(() => {
             const h2Elements = document.querySelectorAll(".prose h2");
             const items: { id: string; text: string }[] = [];
@@ -73,7 +119,7 @@ export default function SummaryViewer({ content, eraId }: Props) {
                     }
                 });
             },
-            { rootMargin: "-10% 0px -70% 0px" } // 상단 10% ~ 하단 70% 도달 시 active
+            { rootMargin: "-10% 0px -70% 0px" }
         );
 
         const h2Elements = document.querySelectorAll(".prose h2");
@@ -111,13 +157,12 @@ export default function SummaryViewer({ content, eraId }: Props) {
     const [previousRecords, setPreviousRecords] = useState<Record<string, "correct" | "wrong">>({});
 
     const handleQuizClick = (quiz: HistoryQuiz, choiceIdx: number) => {
-        if (quizChecked[quiz.id]) return; // prevent multiple attempts
+        if (quizChecked[quiz.id]) return;
         
         const isCorrect = choiceIdx === quiz.answer;
         setQuizAnswers(prev => ({ ...prev, [quiz.id]: choiceIdx }));
         setQuizChecked(prev => ({ ...prev, [quiz.id]: true }));
 
-        // Save to localStorage
         const recordsKey = "antigravity_history_quiz_records";
         try {
             const existingStr = localStorage.getItem(recordsKey);
@@ -125,7 +170,6 @@ export default function SummaryViewer({ content, eraId }: Props) {
             existing[quiz.id] = isCorrect ? "correct" : "wrong";
             localStorage.setItem(recordsKey, JSON.stringify(existing));
             
-            // Update local state instantly so the tags dynamically update
             setPreviousRecords(prev => ({
                 ...prev,
                 [quiz.id]: isCorrect ? "correct" : "wrong"
@@ -143,7 +187,6 @@ export default function SummaryViewer({ content, eraId }: Props) {
     const handleOpenModal = () => {
         resetQuiz();
         
-        // Load quiz records from localStorage
         const recordsKey = "antigravity_history_quiz_records";
         try {
             const existingStr = localStorage.getItem(recordsKey);
@@ -153,7 +196,6 @@ export default function SummaryViewer({ content, eraId }: Props) {
             console.error("Failed to load quiz records", e);
         }
 
-        // Shuffle and select 3 quizzes for this era
         const allQuizzes = HISTORY_QUIZZES[eraId] || [];
         if (allQuizzes.length > 0) {
             const shuffled = [...allQuizzes]
