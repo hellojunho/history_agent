@@ -1,18 +1,3 @@
--- DDL: history_media 테이블 생성 (기존 테이블이 있을 시 드롭 후 재생성)
-DROP TABLE IF EXISTS history_media CASCADE;
-
-CREATE TABLE history_media (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    era VARCHAR(255) NOT NULL,
-    media_type VARCHAR(255) NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    release_year INTEGER NOT NULL,
-    associated_event VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    deleted_at TIMESTAMP
-);
-
 -- DML: 정예 역사적 사실 기반 미디어 데이터 삽입
 INSERT INTO history_media (era, media_type, title, release_year, associated_event) VALUES
 -- 1. 삼국 시대 및 가야

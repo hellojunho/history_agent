@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Sparkles, X, ChevronRight, CheckCircle2, HelpCircle } from "lucide-react";
 import MarkdownViewer from "./MarkdownViewer";
@@ -14,8 +15,10 @@ interface Props {
 
 export default function SummaryViewer({ content, eraId }: Props) {
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         if (process.env.NODE_ENV === "development") {
             const eventSource = new EventSource("/api/dev-watch");
             
@@ -134,16 +137,16 @@ export default function SummaryViewer({ content, eraId }: Props) {
             </div>
 
             {/* Toss Premium Bottom Sheet / Modal */}
-            {isModalOpen && summary && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center p-0 md:items-center md:p-6">
+            {isModalOpen && summary && mounted && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                     {/* Backdrop */}
                     <div 
                         className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity"
                         onClick={handleCloseModal}
                     />
 
-                    {/* Sheet Content */}
-                    <div className="animate-slide-up relative z-10 flex max-h-[85vh] w-full max-w-3xl flex-col overflow-hidden rounded-t-[28px] border border-white/80 bg-white shadow-[0_32px_80px_rgba(15,23,42,0.28)] md:max-h-[90vh] md:rounded-[32px]">
+                    {/* Modal Content */}
+                    <div className="animate-scale-in relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white shadow-[0_32px_80px_rgba(15,23,42,0.28)]">
                         {/* Header */}
                         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200/80 bg-white/96 px-6 py-5 backdrop-blur">
                             <div className="flex items-center gap-2">
@@ -252,19 +255,19 @@ export default function SummaryViewer({ content, eraId }: Props) {
                                                 )}
 
                                                 {/* Options Buttons */}
-                                                <div className="flex flex-col gap-2.5">
+                                                <div className="flex flex-col gap-3.5">
                                                     {q.options.map((option, optIdx) => {
                                                         const isSelected = userAns === optIdx;
                                                         const isCorrectAns = optIdx === q.answer;
 
-                                                        let btnStyle = "border-slate-200 text-slate-800 hover:bg-slate-50 hover:border-slate-300";
+                                                        let btnStyle = "border-slate-200 text-slate-800 hover:bg-slate-50 hover:border-slate-300 shadow-sm";
                                                         if (isAnswered) {
                                                             if (isCorrectAns) {
-                                                                btnStyle = "border-green-500 bg-green-50 text-green-700 font-extrabold shadow-sm";
+                                                                btnStyle = "border-green-500 bg-green-50 text-green-700 font-bold shadow-md ring-2 ring-green-500/20";
                                                             } else if (isSelected) {
-                                                                btnStyle = "border-red-500 bg-red-50 text-red-700 font-extrabold";
+                                                                btnStyle = "border-red-500 bg-red-50 text-red-700 font-bold ring-2 ring-red-500/20";
                                                             } else {
-                                                                btnStyle = "border-slate-100 text-slate-400 opacity-60 cursor-not-allowed";
+                                                                btnStyle = "border-slate-100 text-slate-400 opacity-50 cursor-not-allowed";
                                                             }
                                                         }
 
@@ -273,9 +276,22 @@ export default function SummaryViewer({ content, eraId }: Props) {
                                                                 key={optIdx}
                                                                 disabled={isAnswered}
                                                                 onClick={() => handleQuizClick(q, optIdx)}
-                                                                className={`w-full rounded-xl border px-5 py-4 text-left text-sm font-semibold transition-all ${btnStyle} ${!isAnswered ? 'active:scale-[0.98]' : ''}`}
+                                                                className={`w-full text-left px-6 py-5 rounded-2xl border transition-all text-base font-semibold leading-relaxed ${btnStyle} ${!isAnswered ? 'hover:scale-[1.01] active:scale-[0.99]' : ''}`}
                                                             >
-                                                                {option}
+                                                                <span className="flex items-start gap-3">
+                                                                    <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ${
+                                                                        isAnswered 
+                                                                            ? isCorrectAns 
+                                                                                ? "bg-green-600 text-white" 
+                                                                                : isSelected 
+                                                                                    ? "bg-red-600 text-white" 
+                                                                                    : "bg-slate-100 text-slate-400"
+                                                                            : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
+                                                                    }`}>
+                                                                        {optIdx + 1}
+                                                                    </span>
+                                                                    <span className="flex-1">{option}</span>
+                                                                </span>
                                                             </button>
                                                         );
                                                     })}
@@ -319,17 +335,20 @@ export default function SummaryViewer({ content, eraId }: Props) {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
-            {/* Custom sheet CSS animation injects */}
+            {/* Custom modal CSS animation injects */}
             <style jsx global>{`
-                @keyframes slide-up {
+                @keyframes scale-in {
                     from {
-                        transform: translateY(100%);
+                        opacity: 0;
+                        transform: scale(0.96);
                     }
                     to {
-                        transform: translateY(0);
+                        opacity: 1;
+                        transform: scale(1);
                     }
                 }
                 @keyframes fade-in {
@@ -340,8 +359,8 @@ export default function SummaryViewer({ content, eraId }: Props) {
                         opacity: 1;
                     }
                 }
-                .animate-slide-up {
-                    animation: slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                .animate-scale-in {
+                    animation: scale-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
                 }
                 .animate-fade-in {
                     animation: fade-in 0.25s ease-out forwards;

@@ -765,44 +765,59 @@ export default function CramPage() {
                                 </div>
 
                                 {/* Multiple Choices */}
-                                <div className="grid grid-cols-1 gap-3 pt-2">
-                                    {shuffledQuizzes[currentQuizIndex]?.choices.map((choice, idx) => {
-                                        const isSelected = selectedAnswer === idx;
-                                        const isCorrect = idx === shuffledQuizzes[currentQuizIndex].answer;
-                                        
-                                        let optionStyle = "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50";
-                                        if (isEvaluated) {
-                                            if (isCorrect) {
-                                                optionStyle = "border-green-500 bg-green-50 text-green-700 font-extrabold shadow-sm";
-                                            } else if (isSelected) {
-                                                optionStyle = "border-red-500 bg-red-50 text-red-700 font-extrabold shadow-sm";
-                                            } else {
-                                                optionStyle = "border-slate-100 bg-white text-slate-300 opacity-60 cursor-not-allowed";
-                                            }
-                                        } else if (isSelected) {
-                                            optionStyle = "border-toss-blue bg-blue-50/40 text-toss-blue font-extrabold shadow-sm ring-1 ring-toss-blue/20";
-                                        }
+                                 <div className="flex flex-col gap-3.5 pt-2">
+                                     {shuffledQuizzes[currentQuizIndex]?.choices.map((choice, idx) => {
+                                         const isSelected = selectedAnswer === idx;
+                                         const isCorrect = idx === shuffledQuizzes[currentQuizIndex].answer;
+                                         
+                                         let optionStyle = "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50 shadow-sm";
+                                         if (isEvaluated) {
+                                             if (isCorrect) {
+                                                 optionStyle = "border-green-500 bg-green-50 text-green-700 font-bold shadow-md ring-2 ring-green-500/20";
+                                             } else if (isSelected) {
+                                                 optionStyle = "border-red-500 bg-red-50 text-red-700 font-bold ring-2 ring-red-500/20";
+                                             } else {
+                                                 optionStyle = "border-slate-100 bg-white text-slate-300 opacity-50 cursor-not-allowed";
+                                             }
+                                         } else if (isSelected) {
+                                             optionStyle = "border-toss-blue bg-blue-50/40 text-toss-blue font-extrabold shadow-md ring-2 ring-toss-blue/20";
+                                         }
+ 
+                                         return (
+                                             <button
+                                                 key={idx}
+                                                 disabled={isEvaluated}
+                                                 onClick={() => handleAnswerSelect(idx)}
+                                                 className={`w-full text-left px-6 py-5 rounded-2xl border transition-all text-base font-semibold leading-relaxed ${optionStyle} ${!isEvaluated ? 'hover:scale-[1.01] active:scale-[0.99]' : ''}`}
+                                             >
+                                                 <span className="flex items-start gap-3 w-full">
+                                                     <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full text-xs font-black ${
+                                                         isEvaluated 
+                                                             ? isCorrect 
+                                                                 ? "bg-green-600 text-white" 
+                                                                 : isSelected 
+                                                                     ? "bg-red-600 text-white" 
+                                                                     : "bg-slate-100 text-slate-300"
+                                                             : isSelected
+                                                                 ? "bg-toss-blue text-white"
+                                                                 : "bg-slate-100 text-slate-600"
+                                                     }`}>
+                                                         {idx + 1}
+                                                     </span>
+                                                     <span className="flex-1">{choice}</span>
+                                                     {isEvaluated && isCorrect && (
+                                                         <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 self-center ml-auto" />
+                                                     )}
+                                                     {isEvaluated && isSelected && !isCorrect && (
+                                                         <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 self-center ml-auto" />
+                                                     )}
+                                                 </span>
+                                             </button>
+                                         );
+                                     })}
+                                 </div>
 
-                                        return (
-                                            <button
-                                                key={idx}
-                                                disabled={isEvaluated}
-                                                onClick={() => handleAnswerSelect(idx)}
-                                                className={`w-full py-4.5 px-5 text-left text-xs md:text-sm font-semibold rounded-xl border transition-all flex items-center justify-between gap-3 ${optionStyle} ${!isEvaluated ? 'active:scale-[0.99]' : ''}`}
-                                            >
-                                                <span className="leading-relaxed">{idx + 1}. {choice}</span>
-                                                {isEvaluated && isCorrect && (
-                                                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                                                )}
-                                                {isEvaluated && isSelected && !isCorrect && (
-                                                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                                                )}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-
-                                {/* Evaluation Feedback Zone */}
+                                 {/* Evaluation Feedback Zone */}
                                 {isEvaluated && (
                                     <div className="space-y-4 pt-4 border-t border-slate-100 animate-in fade-in duration-300">
                                         <div className={`flex items-center gap-2.5 p-4 rounded-xl text-xs md:text-sm font-bold leading-relaxed border ${
