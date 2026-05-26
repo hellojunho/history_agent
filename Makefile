@@ -46,6 +46,14 @@ delete-exam-%:
 	@echo "제$*회 시험 데이터를 삭제합니다..."
 	@node backend/delete_exam.js $*
 
+create-user:
+	@echo "10명의 테스트 유저를 생성합니다..."
+	@node backend/manage_test_users.js create
+
+delete-user:
+	@echo "테스트 유저들을 데이터베이스에서 완전 삭제합니다..."
+	@node backend/manage_test_users.js delete
+
 start-admin:
 	make start
 	@echo "서비스 가동을 기다리는 중입니다..."

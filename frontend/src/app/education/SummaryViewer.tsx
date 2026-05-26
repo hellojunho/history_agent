@@ -16,6 +16,10 @@ interface Props {
 export default function SummaryViewer({ content, eraId }: Props) {
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
+    
+    // 목차(TOC) 상태 및 활성 인덱스 상태
+    const [toc, setToc] = useState<{ id: string; text: string }[]>([]);
+    const [activeId, setActiveId] = useState<string>("");
 
     useEffect(() => {
         setMounted(true);
@@ -34,6 +38,68 @@ export default function SummaryViewer({ content, eraId }: Props) {
             };
         }
     }, [router]);
+
+    // 렌더링된 H2 헤더 수집 및 고유 ID 자동 부여
+    useEffect(() => {
+        if (!mounted) return;
+        
+        // Next.js hydration 안정성을 위해 짧은 지연 처리
+        const timer = setTimeout(() => {
+            const h2Elements = document.querySelectorAll(".prose h2");
+            const items: { id: string; text: string }[] = [];
+            h2Elements.forEach((el, index) => {
+                const id = el.id || `toc-heading-${index}`;
+                el.id = id;
+                items.push({
+                    id,
+                    text: el.textContent || ""
+                });
+            });
+            setToc(items);
+        }, 100);
+
+        return () => clearTimeout(timer);
+    }, [content, mounted]);
+
+    // 스크롤 트래커 (Intersection Observer)
+    useEffect(() => {
+        if (toc.length === 0) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setActiveId(entry.target.id);
+                    }
+                });
+            },
+            { rootMargin: "-10% 0px -70% 0px" } // 상단 10% ~ 하단 70% 도달 시 active
+        );
+
+        const h2Elements = document.querySelectorAll(".prose h2");
+        h2Elements.forEach((el) => observer.observe(el));
+
+        return () => {
+            h2Elements.forEach((el) => observer.unobserve(el));
+        };
+    }, [toc]);
+
+    // 헤더 오프셋(80px)을 감안한 부드러운 스크롤 이동
+    const scrollToHeading = (id: string) => {
+        const el = document.getElementById(id);
+        if (el) {
+            const offset = 80;
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = el.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: "smooth"
+            });
+        }
+    };
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const summary = ERA_SUMMARIES[eraId];
@@ -108,7 +174,32 @@ export default function SummaryViewer({ content, eraId }: Props) {
     };
 
     return (
-        <div className="space-y-12">
+        <div className="space-y-12 relative">
+            {/* Desktop TOC Sidebar */}
+            {toc.length > 0 && (
+                <aside className="hidden lg:flex fixed right-4 xl:right-[calc(50%-640px-160px)] top-1/2 -translate-y-1/2 z-40 flex-col bg-white/80 backdrop-blur-md border border-slate-200/60 p-4 rounded-2xl w-36 shadow-[0_12px_30px_rgba(15,23,42,0.05)] space-y-2.5 transition-all duration-300">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                        목차 바로가기
+                    </p>
+                    <nav className="flex flex-col space-y-1.5">
+                        {toc.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => scrollToHeading(item.id)}
+                                className={`text-left text-[11px] font-extrabold leading-relaxed transition-all truncate hover:text-blue-600 ${
+                                    activeId === item.id
+                                        ? "text-blue-600 font-black pl-1.5 border-l-2 border-blue-600"
+                                        : "text-slate-400 hover:pl-1"
+                                }`}
+                            >
+                                {item.text}
+                            </button>
+                        ))}
+                    </nav>
+                </aside>
+            )}
+
             {/* Main Markdown Content */}
             <MarkdownViewer content={content} />
 

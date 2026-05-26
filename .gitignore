@@ -31,3 +31,4 @@ uploads/
 
 
 # frontend/src/data/
+*.log

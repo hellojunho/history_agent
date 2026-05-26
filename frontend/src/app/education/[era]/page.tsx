@@ -16,7 +16,7 @@ export default async function EraPage({ params }: { params: { era: string } }) {
     
     // Read all files in the era directory
     const dirPath = path.join(process.cwd(), "src/data/history_deep", eraId);
-    let combinedContent = `# ${eraTitle}\n\n`;
+    let combinedContent = "";
 
     try {
         if (fs.existsSync(dirPath)) {

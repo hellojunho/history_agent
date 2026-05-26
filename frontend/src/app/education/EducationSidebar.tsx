@@ -10,7 +10,7 @@ export default function EducationSidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
+        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto no-scrollbar pb-6">
             <div className="glass-panel overflow-hidden p-5">
                 <div className="flex items-start justify-between gap-3">
                     <div>

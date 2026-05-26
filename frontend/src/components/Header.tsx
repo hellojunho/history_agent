@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, CalendarDays, GraduationCap, LayoutDashboard, LogOut, Menu, PenSquare, Sparkles, UserCircle2, X } from "lucide-react";
+import { BookOpen, CalendarDays, GraduationCap, LayoutDashboard, LogOut, Menu, PenSquare, Sparkles, UserCircle2, X, MessageSquare } from "lucide-react";
 
 const NAV_ITEMS = [
     { href: "/education", label: "학습자료", icon: BookOpen },
     { href: "/cbt", label: "CBT", icon: GraduationCap },
     { href: "/cram", label: "벼락치기", icon: Sparkles },
     { href: "/schedules", label: "시험 일정", icon: CalendarDays },
+    { href: "/board", label: "게시판", icon: MessageSquare },
     { href: "/inquiries", label: "문의", icon: PenSquare },
 ];
 
@@ -71,7 +72,6 @@ export default function Header() {
                             </span>
                             <div className="min-w-0">
                                 <p className="truncate text-[15px] font-black tracking-[-0.03em] text-slate-950">한능검 학습 스튜디오</p>
-                                <p className="truncate text-xs font-semibold text-slate-500">이해, 암기, 복습을 한 흐름으로 묶은 한국사 학습 서비스</p>
                             </div>
                         </Link>
 
