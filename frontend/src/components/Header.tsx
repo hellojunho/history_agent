@@ -58,6 +58,7 @@ export default function Header() {
                     <Link href="/admin" className="text-red-500 font-bold hover:bg-red-50 px-3 py-1.5 rounded-xl transition-all text-sm">관리자</Link>
                 )}
                 <Link href="/education" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">학습자료</Link>
+                <Link href="/cartoon" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">만화로 보는 역사</Link>
                 {isAdmin && (
                     <Link href="/cbt" className="text-toss-gray600 hover:text-toss-gray900 hover:bg-toss-gray100/60 px-3 py-1.5 rounded-xl transition-all text-sm font-semibold">CBT 기출문제 (개발중)</Link>
                 )}

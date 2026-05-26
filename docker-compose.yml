@@ -8,6 +8,8 @@ services:
       - "11000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:20000
+    volumes:
+      - ./frontend/public:/app/public
     depends_on:
       - backend
 
