@@ -96,8 +96,15 @@ export async function DELETE(request: Request): Promise<NextResponse> {
         const dataSource = await initializeDatabase();
         const userRepository = dataSource.getRepository(User);
         
-        // TypeORM softDelete 실행 (deletedAt에 날짜 기입)
-        await userRepository.softDelete(decoded.userId);
+        const user = await userRepository.findOne({ where: { id: decoded.userId } });
+        if (!user || user.deletedAt) {
+            return NextResponse.json({ message: "User not found" }, { status: 404 });
+        }
+
+        // 회원 탈퇴 처리: 비활성화 상태 부여 및 탈퇴 시간, 수정 시간 갱신
+        user.isActivate = false;
+        user.deletedAt = new Date();
+        await userRepository.save(user);
 
         return NextResponse.json({ message: "회원 탈퇴가 완료되었습니다. 그동안 이용해주셔서 감사합니다." }, { status: 200 });
     } catch (error: unknown) {

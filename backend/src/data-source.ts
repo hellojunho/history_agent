@@ -11,6 +11,10 @@ import { UserLoginLog } from "./entities/UserLoginLog";
 import { ExamSchedule } from "./entities/ExamSchedule";
 import { ExamNotification } from "./entities/ExamNotification";
 import { Inquiry, InquiryComment } from "./entities/Inquiry";
+import { CartoonEpisode } from "./entities/CartoonEpisode";
+import { CartoonCut } from "./entities/CartoonCut";
+import { HistoryMedia } from "./entities/HistoryMedia";
+import { BoardPost, BoardComment, BoardLike } from "./entities/BoardPost";
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -21,7 +25,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DATABASE_NAME || "hanneunggeom",
     synchronize: true, // 개발 환경에서만 true
     logging: false,
-    entities: [User, Material, Exam, Question, UserExamResult, UserAnswer, UserLoginLog, ExamSchedule, ExamNotification, Inquiry, InquiryComment],
+    entities: [User, Material, Exam, Question, UserExamResult, UserAnswer, UserLoginLog, ExamSchedule, ExamNotification, Inquiry, InquiryComment, CartoonEpisode, CartoonCut, HistoryMedia, BoardPost, BoardComment, BoardLike],
     migrations: [],
     subscribers: [],
 });
