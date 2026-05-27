@@ -13,6 +13,12 @@ export default function MyPage() {
     const [isUpdating, setIsUpdating] = useState(false);
     const [isWithdrawing, setIsWithdrawing] = useState(false);
 
+    // 새 닉네임 및 프로필 이미지 업로드 상태
+    const [newNickname, setNewNickname] = useState("");
+    const [isUpdatingNickname, setIsUpdatingNickname] = useState(false);
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [nicknameError, setNicknameError] = useState("");
+
     // 새 탭 상태 및 활동 내역 상태
     const [activeTab, setActiveTab] = useState<"profile" | "activity">("profile");
     const [activities, setActivities] = useState<any[]>([]);
@@ -26,6 +32,9 @@ export default function MyPage() {
         try {
             const data = await apiRequest<any>("/api/users/me");
             setProfile(data);
+            if (data.nickname) {
+                setNewNickname(data.nickname);
+            }
         } catch (error) {
             console.error("Failed to fetch profile:", error);
             alert("로그인이 필요하거나 세션이 만료되었습니다.");
@@ -34,6 +43,65 @@ export default function MyPage() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleUpdateNickname = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const trimmed = newNickname.trim();
+        if (!trimmed) {
+            alert("변경할 닉네임을 입력해주세요.");
+            return;
+        }
+
+        setIsUpdatingNickname(true);
+        setNicknameError("");
+
+        try {
+            const result = await apiRequest<any>("/api/users/me", {
+                method: "PATCH",
+                body: JSON.stringify({ nickname: trimmed })
+            });
+            alert(result.message || "닉네임이 성공적으로 변경되었습니다.");
+            setProfile((prev: any) => ({ ...prev, nickname: trimmed }));
+            setNicknameError("");
+        } catch (error: any) {
+            setNicknameError(error.message || "닉네임 변경에 실패했습니다.");
+        } finally {
+            setIsUpdatingNickname(false);
+        }
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            alert("프로필 이미지는 최대 2MB까지 업로드할 수 있습니다.");
+            return;
+        }
+
+        setIsUploadingImage(true);
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64 = reader.result as string;
+            try {
+                const result = await apiRequest<any>("/api/users/me", {
+                    method: "PATCH",
+                    body: JSON.stringify({ profileImage: base64 })
+                });
+                setProfile((prev: any) => ({ ...prev, profileImage: base64 }));
+                alert(result.message || "프로필 이미지가 성공적으로 업데이트되었습니다.");
+            } catch (error: any) {
+                alert(error.message || "프로필 이미지 수정에 실패했습니다.");
+            } finally {
+                setIsUploadingImage(false);
+            }
+        };
+        reader.onerror = () => {
+            alert("이미지 파일을 읽는 데 실패했습니다.");
+            setIsUploadingImage(false);
+        };
+        reader.readAsDataURL(file);
     };
 
     const fetchActivities = useCallback(async () => {
@@ -57,7 +125,6 @@ export default function MyPage() {
         fetchProfile();
     }, [router]);
 
-    // 탭 및 필터 변경 시 활동 내역 로드
     useEffect(() => {
         if (activeTab === "activity") {
             fetchActivities();
@@ -165,22 +232,56 @@ export default function MyPage() {
             {/* Content Section */}
             {activeTab === "profile" ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
-                    {/* 1. Account Summary Card */}
-                    <div className="md:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center space-y-4 relative overflow-hidden">
+                    {/* 1. Account Summary Card (Toss Style Circular Avatar) */}
+                    <div className="md:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center space-y-5 relative overflow-hidden">
                         <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-blue-500 to-indigo-500" />
                         
-                        {/* User Avatar Initial */}
-                        <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center border border-blue-100 mt-2 shadow-inner">
-                            <span className="text-2xl font-black text-blue-600">
-                                {profile?.email?.charAt(0).toUpperCase() || "U"}
-                            </span>
+                        {/* Circular Profile Avatar */}
+                        <div className="relative group/avatar mt-2">
+                            <div className="w-24 h-24 rounded-full border-2 border-blue-500/20 p-1 flex items-center justify-center bg-white shadow-sm overflow-hidden relative">
+                                {profile?.profileImage ? (
+                                    <img
+                                        src={profile.profileImage}
+                                        alt="Profile"
+                                        className="w-full h-full rounded-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 flex items-center justify-center">
+                                        <span className="text-3xl font-black text-blue-600">
+                                            {profile?.nickname?.charAt(0).toUpperCase() || profile?.email?.charAt(0).toUpperCase() || "U"}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Camera Edit Overlay Button */}
+                            <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center border-2 border-white shadow-md cursor-pointer transition-all hover:bg-blue-700 hover:scale-105 active:scale-95">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    disabled={isUploadingImage}
+                                    className="hidden"
+                                />
+                            </label>
                         </div>
 
-                        <div className="space-y-1 w-full">
-                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">이메일 주소</p>
-                            <p className="text-sm font-bold text-gray-800 break-all">{profile?.email}</p>
+                        {/* Nickname & Email */}
+                        <div className="space-y-1 w-full text-center">
+                            <h3 className="text-base font-black text-gray-900 flex items-center justify-center gap-1.5">
+                                {profile?.nickname || "닉네임 없음"}
+                                {profile?.role === "admin" && (
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-50 border border-red-100 text-red-600 font-extrabold font-mono">ADMIN</span>
+                                )}
+                            </h3>
+                            <p className="text-[11px] font-semibold text-gray-400 break-all">{profile?.email}</p>
                         </div>
 
+                        {/* Creation & Role Details */}
                         <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-gray-100 text-left">
                             <div>
                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">회원 유형</p>
@@ -197,9 +298,47 @@ export default function MyPage() {
                         </div>
                     </div>
 
-                    {/* 2. Password Edit Form */}
+                    {/* 2. Detail Setup forms */}
                     <div className="md:col-span-2 space-y-8">
-                        {/* Password Update Card */}
+                        {/* 2-1. Nickname Edit Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-800 flex items-center mb-6">
+                                <span className="w-2.5 h-2.5 rounded-full bg-blue-500 mr-2" />
+                                닉네임 설정
+                            </h2>
+                            
+                            <form onSubmit={handleUpdateNickname} className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">새 닉네임</label>
+                                    <div className="flex gap-3">
+                                        <input
+                                            type="text"
+                                            placeholder="새로운 닉네임을 입력하세요"
+                                            value={newNickname}
+                                            onChange={(e) => setNewNickname(e.target.value)}
+                                            className="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm transition-all bg-gray-50/50"
+                                            required
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={isUpdatingNickname}
+                                            className={`px-6 py-3 rounded-lg text-sm font-bold text-white transition-all shadow-sm ${isUpdatingNickname ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 active:scale-95"}`}
+                                        >
+                                            {isUpdatingNickname ? "변경 중..." : "닉네임 변경"}
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                {nicknameError && (
+                                    <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-4 text-xs font-bold text-orange-700 flex items-start gap-2.5 animate-pulse">
+                                        <span className="text-base leading-none">💡</span>
+                                        <p className="leading-relaxed">{nicknameError}</p>
+                                    </div>
+                                )}
+                            </form>
+                        </div>
+
+                        {/* 2-2. Password Update Card */}
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-800 flex items-center mb-6">
                                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 mr-2" />

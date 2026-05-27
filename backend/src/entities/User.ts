@@ -25,6 +25,9 @@ export class User {
     @Column({ type: "boolean", default: true, name: "is_activate" })
     isActivate!: boolean;
 
+    @Column({ type: "timestamp", nullable: true, name: "last_nickname_changed_at" })
+    lastNicknameChangedAt!: Date | null;
+
     @CreateDateColumn({ name: "created_at" })
     createdAt!: Date;
 

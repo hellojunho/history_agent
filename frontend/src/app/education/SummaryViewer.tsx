@@ -217,29 +217,40 @@ export default function SummaryViewer({ content, eraId }: Props) {
 
     return (
         <div className="space-y-12 relative">
-            {/* Desktop TOC Sidebar */}
-            {toc.length > 0 && (
-                <aside className="hidden lg:flex fixed right-4 xl:right-[calc(50%-640px-160px)] top-1/2 -translate-y-1/2 z-40 flex-col bg-white/80 backdrop-blur-md border border-slate-200/60 p-4 rounded-2xl w-36 shadow-[0_12px_30px_rgba(15,23,42,0.05)] space-y-2.5 transition-all duration-300">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                        목차 바로가기
-                    </p>
-                    <nav className="flex flex-col space-y-1.5">
-                        {toc.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => scrollToHeading(item.id)}
-                                className={`text-left text-[11px] font-extrabold leading-relaxed transition-all truncate hover:text-blue-600 ${
-                                    activeId === item.id
-                                        ? "text-blue-600 font-black pl-1.5 border-l-2 border-blue-600"
-                                        : "text-slate-400 hover:pl-1"
-                                }`}
-                            >
-                                {item.text}
-                            </button>
-                        ))}
-                    </nav>
-                </aside>
+            {/* Desktop & Responsive TOC Sidebar */}
+            {toc.length > 0 && mounted && createPortal(
+                <aside className="fixed right-0 xl:right-[calc(50%-640px-160px)] top-1/2 -translate-y-1/2 z-40 flex items-center transition-all duration-500 ease-out group xl:translate-x-0 xl:opacity-100 translate-x-[calc(100%-24px)] hover:translate-x-0">
+                    {/* 좁은 화면용 플로팅 드로워 핸들 */}
+                    <div className="flex xl:hidden flex-col items-center justify-center w-6 h-28 bg-blue-600 hover:bg-blue-700 text-white rounded-l-2xl shadow-[-4px_0_15px_rgba(37,99,235,0.2)] cursor-pointer select-none py-2 transition-all">
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em] [writing-mode:vertical-lr] flex items-center gap-1">
+                            목차
+                        </span>
+                    </div>
+
+                    {/* 실제 목차 콘텐츠 패널 */}
+                    <div className="flex flex-col bg-white/95 backdrop-blur-md border border-slate-200/60 p-4 rounded-l-2xl xl:rounded-2xl w-36 shadow-[0_12px_30px_rgba(15,23,42,0.08)] space-y-2.5">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            목차 바로가기
+                        </p>
+                        <nav className="flex flex-col space-y-1.5">
+                            {toc.map((item) => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => scrollToHeading(item.id)}
+                                    className={`text-left text-[11px] font-extrabold leading-relaxed transition-all truncate hover:text-blue-600 ${
+                                        activeId === item.id
+                                            ? "text-blue-600 font-black pl-1.5 border-l-2 border-blue-600"
+                                            : "text-slate-400 hover:pl-1"
+                                    }`}
+                                >
+                                    {item.text}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                </aside>,
+                document.body
             )}
 
             {/* Main Markdown Content */}
