@@ -13,14 +13,23 @@ export class ExamNotification {
     @Column({ type: "integer", name: "schedule_id" })
     scheduleId!: number;
 
-    @Column({ type: "boolean", default: false, name: "sent_start" })
-    sentStart!: boolean; // 접수 시작일 알림 발송 여부
+    @Column({ type: "boolean", default: false, name: "sent_start_d7" })
+    sentStartD7!: boolean; // 접수 시작 7일 전 알림 발송 여부
 
-    @Column({ type: "boolean", default: false, name: "sent_d7" })
-    sentD7!: boolean; // 접수 마감 D-7 알림 발송 여부
+    @Column({ type: "boolean", default: false, name: "sent_start_d1" })
+    sentStartD1!: boolean; // 접수 시작 1일 전 알림 발송 여부
 
-    @Column({ type: "boolean", default: false, name: "sent_dday" })
-    sentDday!: boolean; // 접수 마감 당일 알림 발송 여부
+    @Column({ type: "boolean", default: false, name: "sent_start_dday" })
+    sentStartDday!: boolean; // 접수 시작 당일 알림 발송 여부
+
+    @Column({ type: "boolean", default: false, name: "sent_end_d7" })
+    sentEndD7!: boolean; // 접수 마감 7일 전 알림 발송 여부
+
+    @Column({ type: "boolean", default: false, name: "sent_end_d1" })
+    sentEndD1!: boolean; // 접수 마감 1일 전 알림 발송 여부
+
+    @Column({ type: "boolean", default: false, name: "sent_end_dday" })
+    sentEndDday!: boolean; // 접수 마감 당일 알림 발송 여부
 
     @CreateDateColumn({ name: "created_at" })
     createdAt!: Date;

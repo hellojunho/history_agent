@@ -15,10 +15,10 @@ function formatDate(date: Date): string {
     return [year, month, day].join("-");
 }
 
-// 7일 전 날짜 계산
-function getD7Date(date: Date): string {
+// N일 전 날짜 계산
+function getOffsetDate(date: Date, offsetDays: number): string {
     const target = new Date(date);
-    target.setDate(target.getDate() - 7);
+    target.setDate(target.getDate() - offsetDays);
     return formatDate(target);
 }
 
@@ -31,9 +31,12 @@ export async function runNotificationCheck() {
         // 조인하여 발송 안 된 알림 정보 조회
         const subscriptions = await notifRepo.find({
             where: [
-                { sentStart: false },
-                { sentD7: false },
-                { sentDday: false }
+                { sentStartD7: false },
+                { sentStartD1: false },
+                { sentStartDday: false },
+                { sentEndD7: false },
+                { sentEndD1: false },
+                { sentEndDday: false }
             ],
             relations: ["user", "schedule"]
         });
@@ -52,17 +55,62 @@ export async function runNotificationCheck() {
             const user = sub.user;
             const schedule = sub.schedule;
 
-            const startStr = formatDate(schedule.registerStart);
-            const endStr = formatDate(schedule.registerEnd);
-            const d7Str = getD7Date(schedule.registerEnd);
+            const startD7 = getOffsetDate(schedule.registerStart, 7);
+            const startD1 = getOffsetDate(schedule.registerStart, 1);
+            const startDday = formatDate(schedule.registerStart);
+            const endD7 = getOffsetDate(schedule.registerEnd, 7);
+            const endD1 = getOffsetDate(schedule.registerEnd, 1);
+            const endDday = formatDate(schedule.registerEnd);
 
             let isUpdated = false;
 
-            // 1. 접수 시작 당일 알림
-            if (todayStr === startStr && !sub.sentStart) {
+            // 1. 접수 시작 7일 전 알림
+            if (todayStr === startD7 && !sub.sentStartD7) {
                 console.log(`
 ========================================================================
-✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공!
+✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공! (접수 시작 D-7)
+------------------------------------------------------------------------
+수신인: ${user.email}
+제 목: [한능검 알림] 제${schedule.round}회 원서 접수 개시 7일 전 안내!
+내 용: 
+  안녕하세요, 학습자님!
+  신청하신 제${schedule.round}회 시험의 원서 접수 시작일이 7일 앞으로 다가왔습니다.
+  미리 접수 준비 및 사진 등록을 마치시길 바랍니다!
+  
+  ▶ 접수 시작일: ${startDday}
+  ▶ 접수처 이동: https://www.historyexam.go.kr
+========================================================================
+`);
+                sub.sentStartD7 = true;
+                isUpdated = true;
+            }
+
+            // 2. 접수 시작 1일 전 알림
+            if (todayStr === startD1 && !sub.sentStartD1) {
+                console.log(`
+========================================================================
+✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공! (접수 시작 D-1)
+------------------------------------------------------------------------
+수신인: ${user.email}
+제 목: [한능검 알림] 제${schedule.round}회 원서 접수 개시 1일 전 안내!
+내 용: 
+  안녕하세요, 학습자님!
+  내일(${startDday})은 신청하신 제${schedule.round}회 시험의 원서 접수가 시작되는 날입니다.
+  접수 시작 시간에 늦지 않게 대기하여 접수를 완료해보세요!
+  
+  ▶ 접수 시작일: ${startDday}
+  ▶ 접수처 이동: https://www.historyexam.go.kr
+========================================================================
+`);
+                sub.sentStartD1 = true;
+                isUpdated = true;
+            }
+
+            // 3. 접수 시작 당일 알림
+            if (todayStr === startDday && !sub.sentStartDday) {
+                console.log(`
+========================================================================
+✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공! (접수 시작 당일)
 ------------------------------------------------------------------------
 수신인: ${user.email}
 제 목: [한능검 알림] 제${schedule.round}회 한국사능력검정시험 원서 접수 개시!
@@ -74,12 +122,12 @@ export async function runNotificationCheck() {
   ▶ 접수처 이동: https://www.historyexam.go.kr
 ========================================================================
 `);
-                sub.sentStart = true;
+                sub.sentStartDday = true;
                 isUpdated = true;
             }
 
-            // 2. 접수 마감 D-7 알림
-            if (todayStr === d7Str && !sub.sentD7) {
+            // 4. 접수 마감 7일 전 알림
+            if (todayStr === endD7 && !sub.sentEndD7) {
                 console.log(`
 ========================================================================
 ✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공! (마감 D-7)
@@ -91,16 +139,37 @@ export async function runNotificationCheck() {
   신청하신 제${schedule.round}회 시험의 원서 접수 마감이 7일 앞으로 다가왔습니다.
   아직 접수를 마치지 않으셨다면, 늦지 않게 접수를 진행하시기 바랍니다.
   
-  ▶ 접수 마감일: ${endStr}
+  ▶ 접수 마감일: ${endDday}
   ▶ 접수처 이동: https://www.historyexam.go.kr
 ========================================================================
 `);
-                sub.sentD7 = true;
+                sub.sentEndD7 = true;
                 isUpdated = true;
             }
 
-            // 3. 접수 마감 당일 알림 (D-Day)
-            if (todayStr === endStr && !sub.sentDday) {
+            // 5. 접수 마감 1일 전 알림
+            if (todayStr === endD1 && !sub.sentEndD1) {
+                console.log(`
+========================================================================
+✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공! (마감 D-1)
+------------------------------------------------------------------------
+수신인: ${user.email}
+제 목: [한능검 알림] 제${schedule.round}회 원서 접수 마감 1일 전 안내!
+내 용: 
+  안녕하세요, 학습자님!
+  내일(${endDday})은 신청하신 제${schedule.round}회 시험의 원서 접수가 마감되는 날입니다.
+  잊지 마시고 접수를 꼭 마쳐주시기 바랍니다.
+  
+  ▶ 접수 마감일: ${endDday}
+  ▶ 접수처 이동: https://www.historyexam.go.kr
+========================================================================
+`);
+                sub.sentEndD1 = true;
+                isUpdated = true;
+            }
+
+            // 6. 접수 마감 당일 알림 (D-Day)
+            if (todayStr === endDday && !sub.sentEndDday) {
                 console.log(`
 ========================================================================
 ✉️ [EMAIL NOTIFICATION] 알림 메일 발송 성공! (마감 D-Day)
@@ -116,7 +185,7 @@ export async function runNotificationCheck() {
   ▶ 접수처 이동: https://www.historyexam.go.kr
 ========================================================================
 `);
-                sub.sentDday = true;
+                sub.sentEndDday = true;
                 isUpdated = true;
             }
 

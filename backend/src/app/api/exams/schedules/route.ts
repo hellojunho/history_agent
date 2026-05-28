@@ -295,10 +295,22 @@ export async function GET(request: Request): Promise<NextResponse> {
             const mergedList = Array.from(mergedMap.values()).sort((a, b) => a.round - b.round);
 
             if (mergedList.length > 0) {
-                // 기존 스케줄 데이터 완전 청소 후 재생성 저장
-                await scheduleRepo.clear();
-                const entities = scheduleRepo.create(mergedList);
-                await scheduleRepo.save(entities);
+                // 기존 사용자 구독 정보 및 외래키 연관 데이터를 보존하기 위해 truncate 대신 round 기준 upsert 처리
+                for (const item of mergedList) {
+                    const existing = await scheduleRepo.findOneBy({ round: item.round });
+                    if (existing) {
+                        existing.year = item.year;
+                        existing.examDate = item.examDate;
+                        existing.registerStart = item.registerStart;
+                        existing.registerEnd = item.registerEnd;
+                        existing.resultDate = item.resultDate;
+                        existing.applyUrl = item.applyUrl;
+                        await scheduleRepo.save(existing);
+                    } else {
+                        const newSchedule = scheduleRepo.create(item);
+                        await scheduleRepo.save(newSchedule);
+                    }
+                }
                 schedules = await scheduleRepo.find({ order: { round: "ASC" } });
             }
         }

@@ -46,9 +46,12 @@ export async function POST(
         const notification = notifRepo.create({
             userId: decoded.userId,
             scheduleId,
-            sentStart: false,
-            sentD7: false,
-            sentDday: false,
+            sentStartD7: false,
+            sentStartD1: false,
+            sentStartDday: false,
+            sentEndD7: false,
+            sentEndD1: false,
+            sentEndDday: false,
         });
 
         await notifRepo.save(notification);

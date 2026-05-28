@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
+import { Bell, BellOff, CalendarDays, Check, X, Mail, Info, ExternalLink, Sparkles, CheckCircle2 } from "lucide-react";
 
 interface ExamSchedule {
     id: number;
@@ -23,13 +24,32 @@ export default function SchedulesPage() {
     const [selectedYear, setSelectedYear] = useState<number>(2026);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     
+    // 모달 제어용 상태
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedSchedule, setSelectedSchedule] = useState<ExamSchedule | null>(null);
+    const [userEmail, setUserEmail] = useState<string>("");
+
     const router = useRouter();
 
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         setIsLoggedIn(!!token);
+        if (token) {
+            fetchUserProfile();
+        }
         fetchSchedules();
     }, []);
+
+    const fetchUserProfile = async () => {
+        try {
+            const data = await apiRequest<{ email: string }>("/api/users/me");
+            if (data && data.email) {
+                setUserEmail(data.email);
+            }
+        } catch (error) {
+            console.error("Failed to fetch user profile:", error);
+        }
+    };
 
     const fetchSchedules = async () => {
         try {
@@ -47,13 +67,19 @@ export default function SchedulesPage() {
         }
     };
 
-    const handleToggleNotification = async (scheduleId: number, isCurrentlySubscribed: boolean) => {
+    // 알림 버튼 클릭 시 모달 열기
+    const handleOpenNotificationModal = (schedule: ExamSchedule) => {
         if (!isLoggedIn) {
             alert("알림 신청은 로그인이 필요한 서비스입니다. 로그인 화면으로 이동합니다.");
             router.push("/auth/login");
             return;
         }
+        setSelectedSchedule(schedule);
+        setIsModalOpen(true);
+    };
 
+    // 모달 내부에서 최종 승인 버튼 클릭 시 동작
+    const handleConfirmNotification = async (scheduleId: number, isCurrentlySubscribed: boolean) => {
         try {
             if (isCurrentlySubscribed) {
                 // 알림 구독 취소
@@ -66,10 +92,10 @@ export default function SchedulesPage() {
                 await apiRequest(`/api/exams/schedules/${scheduleId}/notification`, {
                     method: "POST"
                 });
-                alert("알림 신청이 완료되었습니다! 접수 시작일, 마감 7일 전, 마감 당일에 이메일로 안내해 드립니다.");
+                alert(`알림 신청이 성공적으로 접수되었습니다!\n가입하신 이메일(${userEmail || "회원 이메일"})로 시작 D-7, D-1, 당일 및 마감 D-7, D-1, 당일 등 총 6회 리마인드 안내를 전송합니다.`);
             }
             
-            // 데이터 재조회하여 상태 최신화
+            setIsModalOpen(false);
             fetchSchedules();
         } catch (error: any) {
             alert(error.message || "알림 설정 업데이트에 실패했습니다.");
@@ -107,7 +133,7 @@ export default function SchedulesPage() {
                     <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-bold tracking-wider uppercase">한능검 일정 및 메일링</span>
                     <h1 className="text-3xl font-extrabold tracking-tight">한국사능력검정시험 일정 안내</h1>
                     <p className="text-blue-100 text-sm leading-relaxed">
-                        원하시는 시험 회차의 **알람 버튼**을 켜두시면 원서 접수 시작일, 접수 마감 7일 전, 접수 마감 당일 총 3번에 걸쳐 회원가입 시 입력하신 이메일로 놓치지 않게 안내 메일을 발송해 드립니다.
+                        원하시는 시험 회차의 **알람 버튼**을 켜두시면 원서 접수 시작일, 접수 마감 7일 전, 접수 마감 당일 등 총 6번에 걸쳐 회원가입 시 입력하신 이메일로 놓치지 않게 안내 메일을 발송해 드립니다.
                     </p>
                 </div>
             </div>
@@ -161,21 +187,19 @@ export default function SchedulesPage() {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredSchedules.map((schedule) => (
-                                    <tr key={schedule.id} className="hover:bg-blue-50/10 transition-colors group">
+                                    <tr 
+                                        key={schedule.id} 
+                                        onClick={() => window.open(schedule.applyUrl, "_blank", "noopener,noreferrer")}
+                                        className="hover:bg-blue-50/10 cursor-pointer transition-colors group"
+                                    >
                                         {/* 회차 타이틀 (클릭 시 공식 원서접수처 이동) */}
                                         <td className="py-5 px-6 font-bold text-gray-800 text-sm">
-                                            <a
-                                                href={schedule.applyUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title="한능검 공식 접수처 새 창 열기"
-                                                className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline group-hover:translate-x-0.5 transition-transform"
-                                            >
+                                            <div className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline group-hover:translate-x-0.5 transition-transform">
                                                 제 {schedule.round}회 시험
                                                 <svg className="w-3.5 h-3.5 ml-1 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                 </svg>
-                                            </a>
+                                            </div>
                                         </td>
                                         
                                         {/* 상태 배지 */}
@@ -216,9 +240,12 @@ export default function SchedulesPage() {
                                         </td>
                                         
                                         {/* 알람 신청 버튼 */}
-                                        <td className="py-5 px-6 text-center">
+                                        <td className="py-5 px-6 text-center" onClick={(e) => e.stopPropagation()}>
                                             <button
-                                                onClick={() => handleToggleNotification(schedule.id, schedule.isSubscribed)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenNotificationModal(schedule);
+                                                }}
                                                 className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black shadow-sm transition-all active:scale-95 ${
                                                     schedule.isSubscribed
                                                         ? "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:text-green-800"
@@ -270,6 +297,135 @@ export default function SchedulesPage() {
                     한능검 공식홈페이지 바로가기
                 </a>
             </div>
+
+            {/* 알림 구독/취소 확인 글래스모피즘 모달 */}
+            {isModalOpen && selectedSchedule && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md transition-all duration-300">
+                    <div className="relative w-full max-w-lg overflow-hidden bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-3xl p-8 space-y-6 animate-in fade-in zoom-in-95 duration-200">
+                        {/* 데코 백그라운드 그라디언트 */}
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
+                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
+
+                        {/* 모달 헤더 */}
+                        <div className="flex items-start justify-between border-b border-gray-100 pb-4">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl shadow-sm">
+                                    {selectedSchedule.isSubscribed ? (
+                                        <BellOff className="w-6 h-6 animate-pulse" />
+                                    ) : (
+                                        <Bell className="w-6 h-6 animate-bounce" />
+                                    )}
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-extrabold text-gray-800 tracking-tight">
+                                        {selectedSchedule.isSubscribed ? "알림 신청 취소" : "알림 서비스 신청"}
+                                    </h3>
+                                    <p className="text-xs text-gray-400 font-bold mt-0.5">
+                                        제 {selectedSchedule.round}회 한국사능력검정시험
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="p-2 hover:bg-gray-100/80 rounded-xl transition-colors text-gray-400 hover:text-gray-600"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {/* 모달 컨텐츠 */}
+                        <div className="space-y-4">
+                            {selectedSchedule.isSubscribed ? (
+                                <div className="space-y-3">
+                                    <div className="p-4 bg-red-50/50 border border-red-100 rounded-2xl">
+                                        <p className="text-sm font-semibold text-red-800 leading-relaxed">
+                                            제 {selectedSchedule.round}회 시험의 원서 접수 알림을 취소하시겠습니까?
+                                        </p>
+                                    </div>
+                                    <p className="text-xs text-gray-500 leading-relaxed font-medium">
+                                        구독을 해제하시면 접수 일정(시작/마감)에 관한 모든 리마인드 이메일 발송이 안전하게 중단됩니다.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-2xl space-y-2">
+                                        <h4 className="text-xs font-black text-blue-800 uppercase tracking-wider">이메일 알림 수신 대상</h4>
+                                        <div className="flex items-center gap-2 text-sm font-bold text-gray-800">
+                                            <Mail className="w-4 h-4 text-blue-500" />
+                                            <span>{userEmail || "불러오는 중..."}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <h4 className="text-xs font-black text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                                            <Info className="w-3.5 h-3.5 text-blue-500" />
+                                            알림 발송 스케줄 안내 (총 6회 제공)
+                                        </h4>
+                                        
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-bold">
+                                            <div className="p-3 bg-gray-50/80 border border-gray-100 rounded-xl space-y-1 hover:border-blue-200 transition-colors">
+                                                <span className="text-[10px] text-blue-600 block">📢 원서 접수 시작 알림</span>
+                                                <ul className="space-y-1 text-gray-600">
+                                                    <li className="flex items-center gap-1.5">
+                                                        <Check className="w-3.5 h-3.5 text-green-500" />
+                                                        시작 7일 전 사전 안내
+                                                    </li>
+                                                    <li className="flex items-center gap-1.5">
+                                                        <Check className="w-3.5 h-3.5 text-green-500" />
+                                                        시작 1일 전 리마인드
+                                                    </li>
+                                                    <li className="flex items-center gap-1.5 font-bold text-blue-600">
+                                                        <Check className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+                                                        접수 시작 당일 (D-Day)
+                                                    </li>
+                                                </ul>
+                                            </div>
+
+                                            <div className="p-3 bg-gray-50/80 border border-gray-100 rounded-xl space-y-1 hover:border-red-200 transition-colors">
+                                                <span className="text-[10px] text-red-500 block">🚨 원서 접수 마감 알림</span>
+                                                <ul className="space-y-1 text-gray-600">
+                                                    <li className="flex items-center gap-1.5">
+                                                        <Check className="w-3.5 h-3.5 text-green-500" />
+                                                        마감 7일 전 임박 안내
+                                                    </li>
+                                                    <li className="flex items-center gap-1.5">
+                                                        <Check className="w-3.5 h-3.5 text-green-500" />
+                                                        마감 1일 전 최종 경고
+                                                    </li>
+                                                    <li className="flex items-center gap-1.5 font-bold text-red-600">
+                                                        <Check className="w-3.5 h-3.5 text-red-600 animate-pulse" />
+                                                        접수 마감 당일 (D-Day)
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* 모달 푸터 */}
+                        <div className="flex items-center gap-3 border-t border-gray-100 pt-5">
+                            <button
+                                onClick={() => setIsModalOpen(false)}
+                                className="flex-1 px-5 py-3.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-sm font-bold text-gray-600 rounded-2xl transition-colors active:scale-98"
+                            >
+                                {selectedSchedule.isSubscribed ? "유지하기" : "취소"}
+                            </button>
+                            <button
+                                onClick={() => handleConfirmNotification(selectedSchedule.id, selectedSchedule.isSubscribed)}
+                                className={`flex-1 px-5 py-3.5 text-sm font-extrabold text-white rounded-2xl shadow-md transition-all hover:shadow active:scale-98 ${
+                                    selectedSchedule.isSubscribed
+                                        ? "bg-red-500 hover:bg-red-600"
+                                        : "bg-blue-600 hover:bg-blue-700"
+                                }`}
+                            >
+                                {selectedSchedule.isSubscribed ? "알림 취소하기" : "알림 신청하기"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
