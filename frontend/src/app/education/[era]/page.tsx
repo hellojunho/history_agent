@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { Suspense } from "react";
 import SummaryViewer from "../SummaryViewer";
 import { ERA_LIST } from "../eraList";
 
@@ -54,7 +55,7 @@ export default async function EraPage({ params }: { params: { era: string } }) {
                     <div className="space-y-2">
                         <h1 className="text-3xl font-black tracking-[-0.04em] text-slate-950 sm:text-4xl">{eraTitle}</h1>
                         <p className="max-w-2xl text-sm leading-7 text-slate-600">
-                            {currentEra?.shortLabel || eraTitle} 파트의 핵심 흐름을 먼저 읽고, 하단 요약과 기출 퀴즈로 바로 기억을 고정하세요.
+                            {eraTitle} 파트의 핵심 흐름을 먼저 읽고, 하단 요약과 기출 퀴즈로 바로 기억을 고정하세요.
                         </p>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-sm sm:max-w-sm sm:grid-cols-2">
@@ -70,7 +71,9 @@ export default async function EraPage({ params }: { params: { era: string } }) {
                 </div>
             </section>
 
-            <SummaryViewer content={combinedContent} eraId={eraId} />
+            <Suspense fallback={<div className="glass-panel text-center py-20 text-sm font-bold text-slate-500 animate-pulse">역사자료 요약 및 퀴즈 데이터를 불러오는 중...</div>}>
+                <SummaryViewer content={combinedContent} eraId={eraId} />
+            </Suspense>
         </div>
     );
 }

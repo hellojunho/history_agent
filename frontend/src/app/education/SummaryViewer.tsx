@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
-import { useRouter } from "next/navigation";
 import { Sparkles, X, ChevronRight, CheckCircle2, HelpCircle } from "lucide-react";
 import MarkdownViewer from "./MarkdownViewer";
 import { ERA_SUMMARIES } from "../../data/eraSummaries";
@@ -15,6 +15,8 @@ interface Props {
 
 export default function SummaryViewer({ content, eraId }: Props) {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const searchQuery = searchParams ? searchParams.get("search") : "";
     const [mounted, setMounted] = useState(false);
     
     // 목차(TOC) 상태 및 활성 인덱스 상태
@@ -39,11 +41,55 @@ export default function SummaryViewer({ content, eraId }: Props) {
         }
     }, [router]);
 
+    // URL 검색어(?search=키워드) 감지 및 실시간 하이라이트 & 포커스 안내 로직
+    useEffect(() => {
+        if (!mounted || !searchQuery) return;
+
+        const timer = setTimeout(() => {
+            const elements = document.querySelectorAll(".prose p, .prose li, .prose h3, .prose h2, .prose strong");
+            let targetEl: HTMLElement | null = null;
+
+            for (let i = 0; i < elements.length; i++) {
+                const el = elements[i] as HTMLElement;
+                if (el.textContent && el.textContent.toLowerCase().includes(searchQuery.toLowerCase())) {
+                    targetEl = el;
+                    break;
+                }
+            }
+
+            if (targetEl) {
+                const offset = 120;
+                const bodyRect = document.body.getBoundingClientRect().top;
+                const elementRect = targetEl.getBoundingClientRect().top;
+                const elementPosition = elementRect - bodyRect;
+                const offsetPosition = elementPosition - offset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
+
+                targetEl.style.transition = "all 0.5s ease";
+                targetEl.style.backgroundColor = "#fef08a";
+                targetEl.style.boxShadow = "0 0 0 8px #fef08a";
+                targetEl.style.borderRadius = "8px";
+
+                setTimeout(() => {
+                    if (targetEl) {
+                        targetEl.style.backgroundColor = "transparent";
+                        targetEl.style.boxShadow = "none";
+                    }
+                }, 3500);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery, mounted]);
+
     // 렌더링된 H2 헤더 수집 및 고유 ID 자동 부여
     useEffect(() => {
         if (!mounted) return;
         
-        // Next.js hydration 안정성을 위해 짧은 지연 처리
         const timer = setTimeout(() => {
             const h2Elements = document.querySelectorAll(".prose h2");
             const items: { id: string; text: string }[] = [];
@@ -73,7 +119,7 @@ export default function SummaryViewer({ content, eraId }: Props) {
                     }
                 });
             },
-            { rootMargin: "-10% 0px -70% 0px" } // 상단 10% ~ 하단 70% 도달 시 active
+            { rootMargin: "-10% 0px -70% 0px" }
         );
 
         const h2Elements = document.querySelectorAll(".prose h2");
@@ -111,13 +157,12 @@ export default function SummaryViewer({ content, eraId }: Props) {
     const [previousRecords, setPreviousRecords] = useState<Record<string, "correct" | "wrong">>({});
 
     const handleQuizClick = (quiz: HistoryQuiz, choiceIdx: number) => {
-        if (quizChecked[quiz.id]) return; // prevent multiple attempts
+        if (quizChecked[quiz.id]) return;
         
         const isCorrect = choiceIdx === quiz.answer;
         setQuizAnswers(prev => ({ ...prev, [quiz.id]: choiceIdx }));
         setQuizChecked(prev => ({ ...prev, [quiz.id]: true }));
 
-        // Save to localStorage
         const recordsKey = "antigravity_history_quiz_records";
         try {
             const existingStr = localStorage.getItem(recordsKey);
@@ -125,7 +170,6 @@ export default function SummaryViewer({ content, eraId }: Props) {
             existing[quiz.id] = isCorrect ? "correct" : "wrong";
             localStorage.setItem(recordsKey, JSON.stringify(existing));
             
-            // Update local state instantly so the tags dynamically update
             setPreviousRecords(prev => ({
                 ...prev,
                 [quiz.id]: isCorrect ? "correct" : "wrong"
@@ -143,7 +187,6 @@ export default function SummaryViewer({ content, eraId }: Props) {
     const handleOpenModal = () => {
         resetQuiz();
         
-        // Load quiz records from localStorage
         const recordsKey = "antigravity_history_quiz_records";
         try {
             const existingStr = localStorage.getItem(recordsKey);
@@ -153,7 +196,6 @@ export default function SummaryViewer({ content, eraId }: Props) {
             console.error("Failed to load quiz records", e);
         }
 
-        // Shuffle and select 3 quizzes for this era
         const allQuizzes = HISTORY_QUIZZES[eraId] || [];
         if (allQuizzes.length > 0) {
             const shuffled = [...allQuizzes]
@@ -175,29 +217,40 @@ export default function SummaryViewer({ content, eraId }: Props) {
 
     return (
         <div className="space-y-12 relative">
-            {/* Desktop TOC Sidebar */}
-            {toc.length > 0 && (
-                <aside className="hidden lg:flex fixed right-4 xl:right-[calc(50%-640px-160px)] top-1/2 -translate-y-1/2 z-40 flex-col bg-white/80 backdrop-blur-md border border-slate-200/60 p-4 rounded-2xl w-36 shadow-[0_12px_30px_rgba(15,23,42,0.05)] space-y-2.5 transition-all duration-300">
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
-                        목차 바로가기
-                    </p>
-                    <nav className="flex flex-col space-y-1.5">
-                        {toc.map((item) => (
-                            <button
-                                key={item.id}
-                                onClick={() => scrollToHeading(item.id)}
-                                className={`text-left text-[11px] font-extrabold leading-relaxed transition-all truncate hover:text-blue-600 ${
-                                    activeId === item.id
-                                        ? "text-blue-600 font-black pl-1.5 border-l-2 border-blue-600"
-                                        : "text-slate-400 hover:pl-1"
-                                }`}
-                            >
-                                {item.text}
-                            </button>
-                        ))}
-                    </nav>
-                </aside>
+            {/* Desktop & Responsive TOC Sidebar */}
+            {toc.length > 0 && mounted && createPortal(
+                <aside className="fixed right-0 xl:right-[calc(50%-640px-160px)] top-1/2 -translate-y-1/2 z-40 flex items-center transition-all duration-500 ease-out group xl:translate-x-0 xl:opacity-100 translate-x-[calc(100%-24px)] hover:translate-x-0">
+                    {/* 좁은 화면용 플로팅 드로워 핸들 */}
+                    <div className="flex xl:hidden flex-col items-center justify-center w-6 h-28 bg-blue-600 hover:bg-blue-700 text-white rounded-l-2xl shadow-[-4px_0_15px_rgba(37,99,235,0.2)] cursor-pointer select-none py-2 transition-all">
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em] [writing-mode:vertical-lr] flex items-center gap-1">
+                            목차
+                        </span>
+                    </div>
+
+                    {/* 실제 목차 콘텐츠 패널 */}
+                    <div className="flex flex-col bg-white/95 backdrop-blur-md border border-slate-200/60 p-4 rounded-l-2xl xl:rounded-2xl w-36 shadow-[0_12px_30px_rgba(15,23,42,0.08)] space-y-2.5">
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 border-b border-slate-100 pb-1.5 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            목차 바로가기
+                        </p>
+                        <nav className="flex flex-col space-y-1.5">
+                            {toc.map((item) => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => scrollToHeading(item.id)}
+                                    className={`text-left text-[11px] font-extrabold leading-relaxed transition-all truncate hover:text-blue-600 ${
+                                        activeId === item.id
+                                            ? "text-blue-600 font-black pl-1.5 border-l-2 border-blue-600"
+                                            : "text-slate-400 hover:pl-1"
+                                    }`}
+                                >
+                                    {item.text}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+                </aside>,
+                document.body
             )}
 
             {/* Main Markdown Content */}

@@ -49,7 +49,18 @@ export default function MarkdownViewer({ content }: Props) {
         return result;
     };
 
-    const processedContent = processYeobaek(content);
+    const processBoldQuotes = (text: string): string => {
+        return text.replace(/\*\*'([^']+?)'\*\*/g, "'**$1**'");
+    };
+
+    const fixBoldBoundaries = (text: string): string => {
+        let fixed = text;
+        fixed = fixed.replace(/\*\*([^\*\s\n](?:[^\*\n]*?[^\*\s\n])?)\*\*(?=[가-힣a-zA-Z0-9])/g, '**$1** ');
+        fixed = fixed.replace(/([가-힣a-zA-Z0-9])\*\*([^\*\s\n](?:[^\*\n]*?[^\*\s\n])?)\*\*/g, '$1 **$2**');
+        return fixed;
+    };
+
+    const processedContent = fixBoldBoundaries(processBoldQuotes(processYeobaek(content)));
 
     return (
         <article className="prose prose-slate max-w-none prose-headings:font-black prose-headings:tracking-[-0.03em] prose-p:text-[15px] prose-p:leading-8 prose-strong:text-slate-950 prose-h1:mb-4 prose-h1:text-4xl prose-h1:text-slate-950 prose-h2:mt-14 prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-3 prose-h2:text-2xl prose-h2:text-slate-950 prose-h3:mt-8 prose-h3:text-xl prose-h3:text-blue-800 prose-ul:pl-5 prose-li:my-2 prose-li:marker:text-blue-500 prose-blockquote:rounded-2xl prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:bg-blue-50/60 prose-blockquote:px-6 prose-blockquote:py-5 prose-blockquote:my-6 prose-blockquote:text-slate-800 prose-blockquote:not-italic prose-blockquote:shadow-sm prose-a:text-blue-700 prose-a:font-bold prose-table:block prose-table:overflow-x-auto prose-table:rounded-2xl prose-table:border prose-table:border-slate-200 prose-th:bg-slate-100 prose-th:px-4 prose-th:py-3 prose-th:text-left prose-td:border-t prose-td:border-slate-200 prose-td:px-4 prose-td:py-3 prose-img:rounded-xl">

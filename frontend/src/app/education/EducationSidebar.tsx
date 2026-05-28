@@ -1,13 +1,44 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { BookOpenCheck, CheckCircle2, ChevronRight, Sparkles } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { BookOpenCheck, CheckCircle2, ChevronRight, Sparkles, Search, Loader2 } from "lucide-react";
 import { ERA_LIST } from "./eraList";
 
 export default function EducationSidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searching, setSearching] = useState(false);
+    const [searchError, setSearchError] = useState("");
+
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const trimmed = searchQuery.trim();
+        if (!trimmed) return;
+
+        setSearching(true);
+        setSearchError("");
+
+        try {
+            const res = await fetch(`/api/education/search?q=${encodeURIComponent(trimmed)}`);
+            const data = await res.json();
+
+            if (data.success && data.eraId) {
+                router.push(`/education/${data.eraId}?search=${encodeURIComponent(trimmed)}`);
+            } else {
+                setSearchError(data.message || "검색 결과가 없습니다.");
+                setTimeout(() => setSearchError(""), 3000);
+            }
+        } catch (err) {
+            console.error("Search API connection failed", err);
+            setSearchError("네트워크 오류가 발생했습니다.");
+            setTimeout(() => setSearchError(""), 3000);
+        } finally {
+            setSearching(false);
+        }
+    };
 
     return (
         <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-120px)] lg:overflow-y-auto no-scrollbar pb-6">
@@ -15,12 +46,45 @@ export default function EducationSidebar() {
                 <div className="flex items-start justify-between gap-3">
                     <div>
                         <span className="section-label">Learning Index</span>
-                        <h2 className="mt-3 text-xl font-black tracking-[-0.04em] text-slate-950">시대별 학습 로드맵</h2>
+                        <h2 className="mt-3 text-xl font-black tracking-[-0.04em] text-slate-950">학습 로드맵</h2>
                     </div>
                     <div className="rounded-2xl bg-blue-50 p-3 text-blue-700">
                         <BookOpenCheck className="h-5 w-5" />
                     </div>
                 </div>
+
+                {/* Full-Text Search Bar */}
+                <form onSubmit={handleSearch} className="mt-4 relative">
+                    <input
+                        type="text"
+                        placeholder="역사 키워드 검색..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        disabled={searching}
+                        className="w-full pl-9 pr-12 py-2.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                        {searching ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                        ) : (
+                            <Search className="h-3.5 w-3.5" />
+                        )}
+                    </div>
+                    {searchQuery && (
+                        <button
+                            type="submit"
+                            disabled={searching}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-blue-600 px-2 py-1 text-white transition-all hover:bg-blue-700 hover:scale-105 active:scale-95 text-[10px] font-bold"
+                        >
+                            이동
+                        </button>
+                    )}
+                </form>
+                {searchError && (
+                    <p className="mt-2 text-center text-[10px] font-extrabold text-red-500 animate-pulse">
+                        {searchError}
+                    </p>
+                )}
 
                 <nav className="mt-5 grid gap-2">
                     {ERA_LIST.map((era, index) => {
@@ -47,11 +111,8 @@ export default function EducationSidebar() {
                                     </span>
                                     <div className="min-w-0 flex-1">
                                         <p className={`truncate text-sm font-black ${isActive ? "text-white" : "text-slate-950"}`}>
-                                            {era.shortLabel}
-                                        </p>
-                                        {/* <p className={`truncate text-xs ${isActive ? "text-blue-100" : "text-slate-500"}`}>
                                             {era.title}
-                                        </p> */}
+                                        </p>
                                     </div>
                                     <ChevronRight className={`h-4 w-4 transition-transform group-hover:translate-x-0.5 ${isActive ? "text-white" : "text-slate-400"}`} />
                                 </div>
