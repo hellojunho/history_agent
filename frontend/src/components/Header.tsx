@@ -97,12 +97,6 @@ export default function Header() {
                         </nav>
 
                         <div className="hidden items-center gap-2 lg:flex">
-                            {isAdmin && (
-                                <Link href="/admin" className="app-button-secondary px-4 py-2.5 text-xs">
-                                    <LayoutDashboard className="h-4 w-4" />
-                                    관리자
-                                </Link>
-                            )}
                             {isLoggedIn && (
                                 <Link href="/mypage" className="app-button-secondary px-4 py-2.5 text-xs">
                                     <UserCircle2 className="h-4 w-4" />
@@ -156,12 +150,6 @@ export default function Header() {
                             </nav>
 
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                {isAdmin && (
-                                    <Link href="/admin" className="app-button-secondary">
-                                        <LayoutDashboard className="h-4 w-4" />
-                                        관리자
-                                    </Link>
-                                )}
                                 {isLoggedIn && (
                                     <Link href="/mypage" className="app-button-secondary">
                                         <UserCircle2 className="h-4 w-4" />

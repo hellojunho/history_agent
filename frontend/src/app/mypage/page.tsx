@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { apiRequest } from "@/lib/api";
+import { User, FileText, LayoutDashboard } from "lucide-react";
+import AdminPage from "@/app/admin/page";
 
 export default function MyPage() {
     const [profile, setProfile] = useState<any>(null);
@@ -20,11 +22,14 @@ export default function MyPage() {
     const [nicknameError, setNicknameError] = useState("");
 
     // 새 탭 상태 및 활동 내역 상태
-    const [activeTab, setActiveTab] = useState<"profile" | "activity">("profile");
+    const [activeTab, setActiveTab] = useState<"profile" | "activity" | "admin">("profile");
     const [activities, setActivities] = useState<any[]>([]);
     const [activityLoading, setActivityLoading] = useState(false);
     const [filterType, setFilterType] = useState<"all" | "post" | "comment" | "like">("all");
     const [sortOrder, setSortOrder] = useState<"latest" | "oldest">("latest");
+
+    // CBT 오답 통계 상태
+    const [wrongCount, setWrongCount] = useState<number>(0);
 
     const router = useRouter();
 
@@ -116,6 +121,15 @@ export default function MyPage() {
         }
     }, [filterType, sortOrder]);
 
+    const fetchWrongAnswersCount = async () => {
+        try {
+            const res = await apiRequest<{ data: any[] }>("/api/users/me/wrong-answers");
+            setWrongCount(res.data?.length || 0);
+        } catch (error) {
+            console.error("Failed to fetch wrong answers count:", error);
+        }
+    };
+
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
@@ -123,6 +137,7 @@ export default function MyPage() {
             return;
         }
         fetchProfile();
+        fetchWrongAnswersCount();
     }, [router]);
 
     useEffect(() => {
@@ -227,10 +242,23 @@ export default function MyPage() {
                     </svg>
                     <span>내 활동</span>
                 </button>
+                {profile?.role === "admin" && (
+                    <button
+                        onClick={() => setActiveTab("admin")}
+                        className={`pb-4 text-sm font-bold border-b-2 transition-all flex items-center space-x-2 ${
+                            activeTab === "admin"
+                                ? "border-blue-600 text-blue-600"
+                                : "border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-300"
+                        }`}
+                    >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span>관리자 페이지</span>
+                    </button>
+                )}
             </div>
 
             {/* Content Section */}
-            {activeTab === "profile" ? (
+            {activeTab === "profile" && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 animate-fadeIn">
                     {/* 1. Account Summary Card (Toss Style Circular Avatar) */}
                     <div className="md:col-span-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center space-y-5 relative overflow-hidden">
@@ -280,7 +308,6 @@ export default function MyPage() {
                             </h3>
                             <p className="text-[11px] font-semibold text-gray-400 break-all">{profile?.email}</p>
                         </div>
-
                         {/* Creation & Role Details */}
                         <div className="grid grid-cols-2 gap-4 w-full pt-4 border-t border-gray-100 text-left">
                             <div>
@@ -415,163 +442,229 @@ export default function MyPage() {
                         </div>
                     </div>
                 </div>
-            ) : (
-                /* Activity Panel */
-                <div className="space-y-6 animate-fadeIn">
-                    {/* Controls (Filters & Sorting) */}
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
-                        {/* Filter Buttons */}
-                        <div className="flex bg-white p-1 rounded-xl shadow-inner border border-gray-200 max-w-fit flex-wrap gap-1">
+            )}
+
+            {/* 3. 내 활동 (My Activity) Tab */}
+            {activeTab === "activity" && (
+                <div className="space-y-8 animate-fadeIn">
+                    {/* CBT 오답/풀이 요약 카드 */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Wrong Notes Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+                            <div className="space-y-4">
+                                <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center border border-red-100 text-red-600">
+                                    <FileText className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">나의 오답 노트</h3>
+                                    <p className="text-sm text-gray-500 mt-1">풀었던 CBT 기출문제 중 오답들을 다시 보며 오답 원인을 복습할 수 있습니다.</p>
+                                </div>
+                                <div className="bg-red-50/50 border border-red-100/50 rounded-xl p-4 flex items-center justify-between">
+                                    <span className="text-sm text-gray-600 font-medium">저장된 오답 개수</span>
+                                    <span className="text-lg font-black text-red-600">{wrongCount}개</span>
+                                </div>
+                            </div>
                             <button
-                                onClick={() => setFilterType("all")}
-                                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                                    filterType === "all"
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-                                }`}
+                                onClick={() => router.push("/cbt/wrong-notes")}
+                                className="mt-6 w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-1.5"
                             >
-                                전체 활동
-                            </button>
-                            <button
-                                onClick={() => setFilterType("post")}
-                                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                                    filterType === "post"
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-                                }`}
-                            >
-                                내가 쓴 글
-                            </button>
-                            <button
-                                onClick={() => setFilterType("comment")}
-                                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                                    filterType === "comment"
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-                                }`}
-                            >
-                                내가 쓴 댓글
-                            </button>
-                            <button
-                                onClick={() => setFilterType("like")}
-                                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                                    filterType === "like"
-                                        ? "bg-blue-600 text-white shadow-sm"
-                                        : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
-                                }`}
-                            >
-                                좋아요한 글
+                                오답 노트 바로가기 &rarr;
                             </button>
                         </div>
 
-                        {/* Sorting Selector */}
-                        <div className="flex items-center space-x-2">
-                            <span className="text-xs font-bold text-gray-500">정렬 기준</span>
-                            <select
-                                value={sortOrder}
-                                onChange={(e) => setSortOrder(e.target.value as any)}
-                                className="px-3 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer shadow-sm"
+                        {/* CBT Practice Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between hover:shadow-md transition-all">
+                            <div className="space-y-4">
+                                <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 text-blue-600">
+                                    <LayoutDashboard className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-800">CBT 기출문제 풀이</h3>
+                                    <p className="text-sm text-gray-500 mt-1">한국사능력검정시험 역대 기출문제를 실전처럼 풀고 오답을 분석해보세요.</p>
+                                </div>
+                                <div className="bg-blue-50/50 border border-blue-100/50 rounded-xl p-4 flex items-center justify-between">
+                                    <span className="text-sm text-gray-600 font-medium">풀이 가능한 회차</span>
+                                    <span className="text-sm font-bold text-blue-600">수시 업데이트 중</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => router.push("/cbt")}
+                                className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-1.5"
                             >
-                                <option value="latest">최신순</option>
-                                <option value="oldest">오래된순</option>
-                            </select>
+                                기출문제 풀러가기 &rarr;
+                            </button>
                         </div>
                     </div>
 
-                    {/* Activity List */}
-                    {activityLoading ? (
-                        <div className="flex flex-col items-center justify-center min-h-[30vh] space-y-3">
-                            <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="text-xs text-gray-400 font-bold">작성한 내역을 가져오고 있습니다...</p>
-                        </div>
-                    ) : activities.length === 0 ? (
-                        <div className="bg-white rounded-2xl border border-gray-100 py-16 px-6 text-center shadow-sm flex flex-col items-center justify-center space-y-4">
-                            <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-300">
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                                </svg>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm font-bold text-gray-700">활동 내역이 존재하지 않습니다.</p>
-                                <p className="text-xs text-gray-400">게시판에서 새로운 글이나 댓글을 달아보세요!</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 gap-4">
-                            {activities.map((activity) => (
-                                <div
-                                    key={activity.id}
-                                    onClick={() => router.push(`/board/${activity.postId}`)}
-                                    className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-blue-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                    {/* 기존 커뮤니티 활동 내역 리스트 (Activity Panel) */}
+                    <div className="space-y-6">
+                        <h4 className="text-base font-black text-gray-800 flex items-center">
+                            <span className="w-2 h-2 rounded-full bg-blue-500 mr-2" />
+                            커뮤니티 활동 내역
+                        </h4>
+                        
+                        {/* Controls (Filters & Sorting) */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
+                            {/* Filter Buttons */}
+                            <div className="flex bg-white p-1 rounded-xl shadow-inner border border-gray-200 max-w-fit flex-wrap gap-1">
+                                <button
+                                    onClick={() => setFilterType("all")}
+                                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                                        filterType === "all"
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                                    }`}
                                 >
-                                    <div className="space-y-2.5 max-w-2xl">
-                                        <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                                            {activity.type === "post" && (
-                                                <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase bg-blue-50 text-blue-600 border border-blue-100 shadow-inner">
-                                                    게시글
+                                    전체 활동
+                                </button>
+                                <button
+                                    onClick={() => setFilterType("post")}
+                                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                                        filterType === "post"
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                                    }`}
+                                >
+                                    내가 쓴 글
+                                </button>
+                                <button
+                                    onClick={() => setFilterType("comment")}
+                                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                                        filterType === "comment"
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                                    }`}
+                                >
+                                    내가 쓴 댓글
+                                </button>
+                                <button
+                                    onClick={() => setFilterType("like")}
+                                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+                                        filterType === "like"
+                                            ? "bg-blue-600 text-white shadow-sm"
+                                            : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"
+                                    }`}
+                                >
+                                    좋아요한 글
+                                </button>
+                            </div>
+
+                            {/* Sorting Selector */}
+                            <div className="flex items-center space-x-2">
+                                <span className="text-xs font-bold text-gray-500">정렬 기준</span>
+                                <select
+                                    value={sortOrder}
+                                    onChange={(e) => setSortOrder(e.target.value as any)}
+                                    className="px-3 py-2 text-xs font-bold text-gray-700 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer shadow-sm"
+                                >
+                                    <option value="latest">최신순</option>
+                                    <option value="oldest">오래된순</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Activity List */}
+                        {activityLoading ? (
+                            <div className="flex flex-col items-center justify-center min-h-[30vh] space-y-3">
+                                <div className="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                                <p className="text-xs text-gray-400 font-bold">작성한 내역을 가져오고 있습니다...</p>
+                            </div>
+                        ) : activities.length === 0 ? (
+                            <div className="bg-white rounded-2xl border border-gray-100 py-16 px-6 text-center shadow-sm flex flex-col items-center justify-center space-y-4">
+                                <div className="w-16 h-16 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-300">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-gray-700">활동 내역이 존재하지 않습니다.</p>
+                                    <p className="text-xs text-gray-400">게시판에서 새로운 글이나 댓글을 달아보세요!</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-4">
+                                {activities.map((activity) => (
+                                    <div
+                                        key={activity.id}
+                                        onClick={() => router.push(`/board/${activity.postId}`)}
+                                        className="bg-white rounded-2xl p-5 border border-gray-100 hover:border-blue-200 hover:shadow-md hover:-translate-y-0.5 cursor-pointer transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                                    >
+                                        <div className="space-y-2.5 max-w-2xl">
+                                            <div className="flex items-center space-x-2 flex-wrap gap-y-1">
+                                                {activity.type === "post" && (
+                                                    <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase bg-blue-50 text-blue-600 border border-blue-100 shadow-inner">
+                                                        게시글
+                                                    </span>
+                                                )}
+                                                {activity.type === "comment" && (
+                                                    <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-inner">
+                                                        댓글
+                                                    </span>
+                                                )}
+                                                {activity.type === "like" && (
+                                                    <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase bg-rose-50 text-rose-600 border border-rose-100 shadow-inner">
+                                                        좋아요
+                                                    </span>
+                                                )}
+                                                
+                                                <span className="text-xs font-bold text-gray-400">
+                                                    {new Date(activity.createdAt).toLocaleDateString("ko-KR", {
+                                                        year: "numeric",
+                                                        month: "2-digit",
+                                                        day: "2-digit",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit"
+                                                    })}
                                                 </span>
-                                            )}
+                                            </div>
+
+                                            <h3 className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
+                                                {activity.type === "post" ? activity.title : (activity.type === "comment" ? activity.content : activity.title)}
+                                            </h3>
+
                                             {activity.type === "comment" && (
-                                                <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-inner">
-                                                    댓글
-                                                </span>
+                                                <p className="text-xs font-medium text-gray-400 flex items-center">
+                                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                                                    </svg>
+                                                    원글: {activity.title}
+                                                </p>
                                             )}
+
                                             {activity.type === "like" && (
-                                                <span className="px-2 py-0.5 rounded text-[10px] font-black tracking-wide uppercase bg-rose-50 text-rose-600 border border-rose-100 shadow-inner">
-                                                    좋아요
-                                                </span>
+                                                <p className="text-xs font-medium text-gray-400 flex items-center">
+                                                    ❤️ 이 게시글의 유용한 내용에 공감했습니다.
+                                                </p>
                                             )}
-                                            
-                                            <span className="text-xs font-bold text-gray-400">
-                                                {new Date(activity.createdAt).toLocaleDateString("ko-KR", {
-                                                    year: "numeric",
-                                                    month: "2-digit",
-                                                    day: "2-digit",
-                                                    hour: "2-digit",
-                                                    minute: "2-digit"
-                                                })}
-                                            </span>
                                         </div>
 
-                                        <h3 className="text-sm font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
-                                            {activity.type === "post" ? activity.title : (activity.type === "comment" ? activity.content : activity.title)}
-                                        </h3>
-
-                                        {activity.type === "comment" && (
-                                            <p className="text-xs font-medium text-gray-400 flex items-center">
-                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                                                </svg>
-                                                원글: {activity.title}
-                                            </p>
-                                        )}
-
-                                        {activity.type === "like" && (
-                                            <p className="text-xs font-medium text-gray-400 flex items-center">
-                                                ❤️ 이 게시글의 유용한 내용에 공감했습니다.
-                                            </p>
+                                        {/* Stats (only for posts) */}
+                                        {activity.type === "post" && (activity.commentCount > 0 || activity.likeCount > 0) && (
+                                            <div className="flex items-center space-x-4 text-xs font-bold text-gray-400 self-end md:self-auto bg-gray-50/50 px-3 py-1.5 rounded-xl border border-gray-100/50">
+                                                {activity.likeCount > 0 && (
+                                                    <span className="flex items-center text-red-500">
+                                                        ❤️ <span className="ml-1 text-gray-500">{activity.likeCount}</span>
+                                                    </span>
+                                                )}
+                                                {activity.commentCount > 0 && (
+                                                    <span className="flex items-center text-blue-500">
+                                                        💬 <span className="ml-1 text-gray-500">{activity.commentCount}</span>
+                                                    </span>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
-                                    {/* Stats (only for posts) */}
-                                    {activity.type === "post" && (activity.commentCount > 0 || activity.likeCount > 0) && (
-                                        <div className="flex items-center space-x-4 text-xs font-bold text-gray-400 self-end md:self-auto bg-gray-50/50 px-3 py-1.5 rounded-xl border border-gray-100/50">
-                                            {activity.likeCount > 0 && (
-                                                <span className="flex items-center text-red-500">
-                                                    ❤️ <span className="ml-1 text-gray-500">{activity.likeCount}</span>
-                                                </span>
-                                            )}
-                                            {activity.commentCount > 0 && (
-                                                <span className="flex items-center text-blue-500">
-                                                    💬 <span className="ml-1 text-gray-500">{activity.commentCount}</span>
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
+            {/* 4. 관리자 (Admin) Tab */}
+            {activeTab === "admin" && profile?.role === "admin" && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fadeIn">
+                    <AdminPage />
                 </div>
             )}
         </div>
