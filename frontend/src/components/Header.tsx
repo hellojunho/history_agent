@@ -21,6 +21,10 @@ export default function Header() {
     const pathname = usePathname();
     const router = useRouter();
 
+    const navItems = isAdmin 
+        ? [...NAV_ITEMS, { href: "/cartoon", label: "만화", icon: Sparkles }] 
+        : NAV_ITEMS;
+
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
@@ -76,7 +80,7 @@ export default function Header() {
                         </Link>
 
                         <nav className="hidden items-center gap-1 lg:flex">
-                            {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                            {navItems.map(({ href, label, icon: Icon }) => {
                                 const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
                                 return (
@@ -135,7 +139,7 @@ export default function Header() {
                     {isMenuOpen && (
                         <div className="mt-4 space-y-4 border-t border-slate-200/70 pt-4 lg:hidden">
                             <nav className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                                {navItems.map(({ href, label, icon: Icon }) => {
                                     const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
                                     return (

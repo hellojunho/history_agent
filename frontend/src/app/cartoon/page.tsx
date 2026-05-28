@@ -15,6 +15,12 @@ interface CartoonEpisode {
 }
 
 const PERIOD_METADATA: Record<string, { bg: string; text: string; desc: string; emoji: string }> = {
+    "선사·고조선": {
+        bg: "from-purple-500/10 to-pink-500/10 border-purple-200 hover:border-purple-400",
+        text: "text-purple-600",
+        desc: "농경 정착의 신석기 혁명과 우리나라 최초의 국가 고조선의 역사",
+        emoji: "🪵"
+    },
     "삼국시대": {
         bg: "from-blue-500/10 to-indigo-500/10 border-blue-200 hover:border-blue-400",
         text: "text-blue-600",
@@ -45,7 +51,7 @@ export default function CartoonPage() {
     const [episodes, setEpisodes] = useState<CartoonEpisode[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedPeriod, setSelectedPeriod] = useState<string>("고려시대"); // 기본 선택은 고려시대 (사용자 요청 예시가 고려이므로)
+    const [selectedPeriod, setSelectedPeriod] = useState<string>("선사·고조선"); // 기본 선택은 선사·고조선
 
     useEffect(() => {
         const fetchEpisodes = async () => {
@@ -104,12 +110,12 @@ export default function CartoonPage() {
     return (
         <div className="py-6 animate-fadeIn">
             {/* 상단 배너 헤더 */}
-            <div className="relative overflow-hidden bg-gradient-to-tr from-toss-blue/5 via-indigo-500/5 to-purple-500/5 rounded-3xl p-8 md:p-12 mb-10 border border-toss-gray200/50 shadow-sm">
-                <div className="relative z-10 max-w-2xl">
+            <div className="relative overflow-hidden bg-gradient-to-tr from-toss-blue/5 via-indigo-500/5 to-purple-500/5 rounded-3xl p-8 md:p-12 mb-10 border border-toss-gray200/50 shadow-sm w-full md:w-fit">
+                <div className="relative z-10">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-toss-blue/10 text-toss-blue text-xs font-bold mb-4">
                         💡 신규 서비스 오픈
                     </span>
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-toss-gray900 leading-tight mb-4 tracking-tight">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-toss-gray900 leading-tight mb-4 tracking-tight whitespace-nowrap">
                         만화로 보는 역사 📚
                     </h1>
                     <p className="text-toss-gray600 md:text-lg leading-relaxed font-medium">

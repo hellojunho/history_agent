@@ -103,44 +103,40 @@ export default function CartoonDetailPage({ params }: { params: { id: string } }
 
     // 만화 이미지 위 오버레이 말풍선 좌표 및 스타일 수식
     const getOverlayBubbleStyle = (name: string, index: number) => {
-        // 코믹북 만화 스타일 기본: 두꺼운 검은 테두리(border-[3px] border-black), 뚜렷한 하드 섀도우(shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]), 손글씨 느낌의 강렬한 폰트
-        const base = "absolute max-w-[190px] sm:max-w-[240px] p-3.5 pt-4 rounded-2xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-[3px] border-black text-xs sm:text-sm font-black text-toss-gray950 transition-all duration-300 hover:opacity-10 hover:scale-95 cursor-zoom-in z-20 animate-fadeIn";
+        // 코믹북 만화 스타일 기본: 두꺼운 검은 테두리(border-2 border-black), 뚜렷한 하드 섀도우, 겹치지 않는 컴팩트한 글꼴 크기
+        const base = "absolute max-w-[130px] sm:max-w-[160px] p-2.5 pt-3.5 rounded-xl shadow-[2.5px_2.5px_0px_0px_rgba(0,0,0,1)] border-2 border-black text-[10px] sm:text-xs font-black text-toss-gray950 transition-all duration-200 hover:scale-[1.02] z-20 animate-fadeIn";
         
         if (index === 0) {
-            // 첫 번째 대화: 좌측 상단 배치, 산뜻한 화이트 코믹 말풍선
+            // 첫 번째 대화: 좌측 상단 배치, 산뜻한 화이트
             return {
-                classes: `${base} left-5 top-8 bg-white text-black`,
-                badge: "bg-[#3182F6] text-white", // 토스 블루 캐릭터 뱃지
-                // 꼬리: 왼쪽 상단 방향 꼬리 (테두리와 내부색 겹치기)
-                tailOuter: "absolute -left-[14px] top-4 w-0 h-0 border-[8px] border-transparent border-r-black",
-                tailInner: "absolute -left-[9.5px] top-[6px] w-0 h-0 border-[6px] border-transparent border-r-white"
+                classes: `${base} left-2 top-6 bg-white text-black`,
+                badge: "bg-[#3182F6] text-white", 
+                tailOuter: "absolute -left-[10px] top-3.5 w-0 h-0 border-[6px] border-transparent border-r-black",
+                tailInner: "absolute -left-[7px] top-[15.5px] w-0 h-0 border-[4.5px] border-transparent border-r-white"
             };
         } else if (index === 1) {
-            // 두 번째 대화: 우측 하단 배치, 경쾌한 옐로우 코믹 말풍선 (장삐쭈/짤툰 감성)
+            // 두 번째 대화: 우측 하단 배치, 경쾌한 옐로우
             return {
-                classes: `${base} right-5 bottom-8 bg-[#FFF89A] text-black`,
-                badge: "bg-[#FF5F2E] text-white", // 활력 넘치는 오렌지 캐릭터 뱃지
-                // 꼬리: 오른쪽 하단 방향 꼬리
-                tailOuter: "absolute -right-[14px] bottom-4 w-0 h-0 border-[8px] border-transparent border-l-black",
-                tailInner: "absolute -right-[9.5px] bottom-[6px] w-0 h-0 border-[6px] border-transparent border-l-[#FFF89A]"
+                classes: `${base} right-2 bottom-6 bg-[#FFF89A] text-black`,
+                badge: "bg-[#FF5F2E] text-white", 
+                tailOuter: "absolute -right-[10px] bottom-3.5 w-0 h-0 border-[6px] border-transparent border-l-black",
+                tailInner: "absolute -right-[7px] bottom-[15.5px] w-0 h-0 border-[4.5px] border-transparent border-l-[#FFF89A]"
             };
         } else if (index === 2) {
-            // 세 번째 대화: 좌측 하단 배치, 부드러운 스카이블루 코믹 말풍선
+            // 세 번째 대화: 좌측 하단 배치, 부드러운 스카이블루
             return {
-                classes: `${base} left-5 bottom-16 bg-[#E8F3FF] text-black`,
+                classes: `${base} left-2 bottom-6 bg-[#E8F3FF] text-black`,
                 badge: "bg-[#1A6DFF] text-white",
-                // 꼬리: 왼쪽 하단 방향 꼬리
-                tailOuter: "absolute -left-[14px] bottom-6 w-0 h-0 border-[8px] border-transparent border-r-black",
-                tailInner: "absolute -left-[9.5px] bottom-[8px] w-0 h-0 border-[6px] border-transparent border-r-[#E8F3FF]"
+                tailOuter: "absolute -left-[10px] bottom-3.5 w-0 h-0 border-[6px] border-transparent border-r-black",
+                tailInner: "absolute -left-[7px] bottom-[15.5px] w-0 h-0 border-[4.5px] border-transparent border-r-[#E8F3FF]"
             };
         } else {
-            // 네 번째 대화: 우측 상단 배치, 발랄한 핑크 코믹 말풍선
+            // 네 번째 대화: 우측 상단 배치, 발랄한 핑크
             return {
-                classes: `${base} right-5 top-16 bg-[#FFEBF0] text-black`,
+                classes: `${base} right-2 top-6 bg-[#FFEBF0] text-black`,
                 badge: "bg-[#FF2E93] text-white",
-                // 꼬리: 오른쪽 상단 방향 꼬리
-                tailOuter: "absolute -right-[14px] top-6 w-0 h-0 border-[8px] border-transparent border-l-black",
-                tailInner: "absolute -right-[9.5px] top-[8px] w-0 h-0 border-[6px] border-transparent border-l-[#FFEBF0]"
+                tailOuter: "absolute -right-[10px] top-3.5 w-0 h-0 border-[6px] border-transparent border-l-black",
+                tailInner: "absolute -right-[7px] top-[15.5px] w-0 h-0 border-[4.5px] border-transparent border-l-[#FFEBF0]"
             };
         }
     };
@@ -224,13 +220,8 @@ export default function CartoonDetailPage({ params }: { params: { id: string } }
                                     alt={`컷 ${cut.cutOrder}`} 
                                     className="w-full h-full object-cover filter brightness-[0.98]"
                                 />
-                                
-                                {/* 컷 상단 인덱스 */}
-                                <span className="absolute top-3 left-3 bg-black/70 text-white font-bold text-xs px-2.5 py-1 rounded-full backdrop-blur-sm shadow-md z-30">
-                                    컷 {cut.cutOrder} / {episode.cuts.length}
-                                </span>
 
-                                {/* 이미지 내부 오버레이 말풍선 (사용자 핵심 요구사항) */}
+                                {/* 이미지 내부 오버레이 말풍선 (겹침 방지 컴팩트 배치) */}
                                 {cut.dialogue && cut.dialogue.characters && cut.dialogue.characters.map((char, charIdx) => {
                                     const bstyle = getOverlayBubbleStyle(char.name, charIdx);
                                     return (
@@ -287,16 +278,13 @@ export default function CartoonDetailPage({ params }: { params: { id: string } }
                                     </div>
                                 )}
 
-                                {/* 이미지 컨테이너 (relative) */}
+                                {/* 이미지 컨테이너 (relative로 배치) */}
                                 <div className="rounded-xl overflow-hidden relative border-4 border-toss-gray900 aspect-square w-full mb-6 shadow-md bg-toss-gray50">
                                     <img 
                                         src={cut.imageUrl} 
                                         alt={`컷 ${cut.cutOrder}`} 
                                         className="w-full h-full object-cover"
                                     />
-                                    <span className="absolute top-3 left-3 bg-black/75 text-white font-bold text-xs px-2.5 py-1 rounded-full backdrop-blur-sm shadow-md z-30">
-                                        컷 {currentSlideIndex + 1} / {episode.cuts.length}
-                                    </span>
 
                                     {/* 이미지 내부 오버레이 말풍선 */}
                                     {cut.dialogue && cut.dialogue.characters && cut.dialogue.characters.map((char, charIdx) => {
