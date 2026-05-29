@@ -12,7 +12,11 @@ interface RawScheduleData {
     examDate: Date;
     resultDate: Date;
     applyUrl: string;
+    regions?: string;
 }
+
+const allRegionsList = "서울,경기,인천,강원,충북,충남,대전,세종,전북,전남,광주,경북,경남,부산,대구,울산,제주";
+const sundayRegionsList = "서울,경기,인천,대전,광주,부산,대구,전북,경북,충남"; // 일요일 시험 등 일부 지역 제한 회차 예시
 
 // 2024~2025년 과거 시험 일정 고정 시드 데이터
 const pastSeedData: RawScheduleData[] = [
@@ -23,7 +27,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2024-01-23T17:00:00+09:00"),
         examDate: new Date("2024-02-17T10:00:00+09:00"),
         resultDate: new Date("2024-02-29T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: sundayRegionsList
     },
     {
         round: 70,
@@ -32,7 +37,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2024-04-30T17:00:00+09:00"),
         examDate: new Date("2024-05-25T10:00:00+09:00"),
         resultDate: new Date("2024-06-05T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 71,
@@ -41,7 +47,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2024-07-16T17:00:00+09:00"),
         examDate: new Date("2024-08-10T10:00:00+09:00"),
         resultDate: new Date("2024-08-22T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 72,
@@ -50,7 +57,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2024-09-17T17:00:00+09:00"),
         examDate: new Date("2024-10-20T10:00:00+09:00"),
         resultDate: new Date("2024-10-31T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 73,
@@ -59,7 +67,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2025-01-14T17:00:00+09:00"),
         examDate: new Date("2025-02-16T10:00:00+09:00"),
         resultDate: new Date("2025-02-27T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: sundayRegionsList
     },
     {
         round: 74,
@@ -68,7 +77,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2025-04-29T17:00:00+09:00"),
         examDate: new Date("2025-05-24T10:00:00+09:00"),
         resultDate: new Date("2025-06-05T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 75,
@@ -77,7 +87,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2025-07-15T17:00:00+09:00"),
         examDate: new Date("2025-08-09T10:00:00+09:00"),
         resultDate: new Date("2025-08-21T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 76,
@@ -86,7 +97,8 @@ const pastSeedData: RawScheduleData[] = [
         registerEnd: new Date("2025-09-23T17:00:00+09:00"),
         examDate: new Date("2025-10-18T10:00:00+09:00"),
         resultDate: new Date("2025-10-31T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
 ];
 
@@ -99,7 +111,8 @@ const fallbackSeedData2026: RawScheduleData[] = [
         registerEnd: new Date("2026-01-13T17:00:00+09:00"),
         examDate: new Date("2026-02-07T10:00:00+09:00"),
         resultDate: new Date("2026-02-20T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: sundayRegionsList
     },
     {
         round: 78,
@@ -108,7 +121,8 @@ const fallbackSeedData2026: RawScheduleData[] = [
         registerEnd: new Date("2026-04-28T17:00:00+09:00"),
         examDate: new Date("2026-05-23T10:00:00+09:00"),
         resultDate: new Date("2026-06-05T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 79,
@@ -117,7 +131,8 @@ const fallbackSeedData2026: RawScheduleData[] = [
         registerEnd: new Date("2026-07-14T17:00:00+09:00"),
         examDate: new Date("2026-08-09T10:00:00+09:00"),
         resultDate: new Date("2026-08-21T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 80,
@@ -126,7 +141,8 @@ const fallbackSeedData2026: RawScheduleData[] = [
         registerEnd: new Date("2026-09-22T17:00:00+09:00"),
         examDate: new Date("2026-10-17T10:00:00+09:00"),
         resultDate: new Date("2026-10-30T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     },
     {
         round: 81,
@@ -135,7 +151,8 @@ const fallbackSeedData2026: RawScheduleData[] = [
         registerEnd: new Date("2026-11-10T17:00:00+09:00"),
         examDate: new Date("2026-11-28T10:00:00+09:00"),
         resultDate: new Date("2026-12-11T10:00:00+09:00"),
-        applyUrl: "https://www.historyexam.go.kr/"
+        applyUrl: "https://www.historyexam.go.kr/",
+        regions: allRegionsList
     }
 ];
 
@@ -240,7 +257,8 @@ async function fetchAndParseOfficialSchedules(): Promise<RawScheduleData[]> {
                         registerEnd,
                         examDate,
                         resultDate,
-                        applyUrl: "https://www.historyexam.go.kr/"
+                        applyUrl: "https://www.historyexam.go.kr/",
+                        regions: allRegionsList
                     });
                 }
             }
@@ -305,6 +323,9 @@ export async function GET(request: Request): Promise<NextResponse> {
                         existing.registerEnd = item.registerEnd;
                         existing.resultDate = item.resultDate;
                         existing.applyUrl = item.applyUrl;
+                        if (item.regions) {
+                            existing.regions = item.regions;
+                        }
                         await scheduleRepo.save(existing);
                     } else {
                         const newSchedule = scheduleRepo.create(item);

@@ -28,6 +28,70 @@ import {
 // Local storage key for cram quiz records
 const CRAM_STORAGE_KEY = "hanneunggeom_cram_quiz_records";
 
+function shuffleArray<T>(items: T[]): T[] {
+    const next = [...items];
+
+    for (let i = next.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+    }
+
+    return next;
+}
+
+function normalizeAnswerIndex(question: CramQuestion): number {
+    const normalized = question.answer - 1;
+
+    if (normalized < 0 || normalized >= question.choices.length) {
+        throw new Error(`Invalid answer index for cram question: ${question.id}`);
+    }
+
+    return normalized;
+}
+
+function buildBalancedAnswerTargets(questionIndexes: number[], choiceCount: number): number[] {
+    const repeatedTargets = questionIndexes.map((_, index) => index % choiceCount);
+    return shuffleArray(repeatedTargets);
+}
+
+function prepareQuizSession(questions: CramQuestion[]): CramQuestion[] {
+    const groupedByChoiceCount = new Map<number, number[]>();
+
+    questions.forEach((question, index) => {
+        const choiceCount = question.choices.length;
+        const indexes = groupedByChoiceCount.get(choiceCount) ?? [];
+        indexes.push(index);
+        groupedByChoiceCount.set(choiceCount, indexes);
+    });
+
+    const targetAnswers = new Array<number>(questions.length);
+
+    groupedByChoiceCount.forEach((questionIndexes, choiceCount) => {
+        const targets = buildBalancedAnswerTargets(questionIndexes, choiceCount);
+        questionIndexes.forEach((questionIndex, offset) => {
+            targetAnswers[questionIndex] = targets[offset];
+        });
+    });
+
+    return questions.map((question, index) => {
+        const originalAnswerIndex = normalizeAnswerIndex(question);
+        const correctChoice = question.choices[originalAnswerIndex];
+        const wrongChoices = shuffleArray(
+            question.choices.filter((_, choiceIndex) => choiceIndex !== originalAnswerIndex)
+        );
+        const targetAnswerIndex = targetAnswers[index];
+        const nextChoices = [...wrongChoices];
+
+        nextChoices.splice(targetAnswerIndex, 0, correctChoice);
+
+        return {
+            ...question,
+            choices: nextChoices,
+            answer: targetAnswerIndex
+        };
+    });
+}
+
 const ERA_OPTIONS = [
     { id: "all", name: "전체 시대", count: 450 },
     { id: "prehistory", name: "선사 & 고조선", count: 50 },
@@ -92,10 +156,11 @@ export default function CramPage() {
             filtered = filtered.filter(q => q.era === eraValue);
         }
         
-        const shuffled = filtered.sort(() => Math.random() - 0.5);
+        const shuffled = shuffleArray(filtered);
         const sliced = shuffled.slice(0, selectedCount);
+        const sessionQuizzes = prepareQuizSession(sliced);
         
-        setShuffledQuizzes(sliced);
+        setShuffledQuizzes(sessionQuizzes);
         setCurrentQuizIndex(0);
         setSelectedAnswer(null);
         setIsEvaluated(false);

@@ -79,6 +79,7 @@
 2. type-check
 3. unit test
 4. build
+5. make start
 
 실패 시:
 
