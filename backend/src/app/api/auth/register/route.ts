@@ -5,10 +5,10 @@ import { hashPassword } from "@/lib/auth";
 
 export async function POST(request: Request): Promise<NextResponse> {
     try {
-        const { email, password } = await request.json();
+        const { email, password, hanneunggeomId, hanneunggeomPassword } = await request.json();
 
-        if (!email || !password) {
-            return NextResponse.json({ message: "Email and password are required" }, { status: 400 });
+        if (!email || !password || !hanneunggeomId) {
+            return NextResponse.json({ message: "이메일, 비밀번호, 한능검 아이디는 필수 입력 사항입니다." }, { status: 400 });
         }
 
         const dataSource = await initializeDatabase();
@@ -16,7 +16,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
         const existingUser = await userRepository.findOneBy({ email });
         if (existingUser) {
-            return NextResponse.json({ message: "User already exists" }, { status: 409 });
+            return NextResponse.json({ message: "이미 존재하는 이메일입니다." }, { status: 409 });
         }
 
         const hashedPassword = await hashPassword(password);
@@ -24,6 +24,8 @@ export async function POST(request: Request): Promise<NextResponse> {
             email,
             passwordHash: hashedPassword,
             role: "general",
+            hanneunggeomId,
+            hanneunggeomPassword: hanneunggeomPassword || null,
         });
 
         await userRepository.save(newUser);

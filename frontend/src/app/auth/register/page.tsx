@@ -9,6 +9,8 @@ export default function RegisterPage(): JSX.Element | null {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [hanneunggeomId, setHanneunggeomId] = useState("");
+    const [hanneunggeomPassword, setHanneunggeomPassword] = useState("");
     const [error, setError] = useState("");
     const [isChecking, setIsChecking] = useState(true);
 
@@ -33,7 +35,7 @@ export default function RegisterPage(): JSX.Element | null {
         try {
             await apiRequest("/api/auth/register", {
                 method: "POST",
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, hanneunggeomId, hanneunggeomPassword }),
             });
             // 가입 후 자동 로그인 시도
             const data = await apiRequest<{ accessToken: string; user: { role: string } }>("/api/auth/login", {
@@ -42,7 +44,7 @@ export default function RegisterPage(): JSX.Element | null {
             });
             localStorage.setItem("accessToken", data.accessToken);
             if (data.user?.role === "admin") {
-                window.location.href = "/admin";
+                window.location.href = "/";
             } else {
                 window.location.href = "/education";
             }
@@ -68,6 +70,28 @@ export default function RegisterPage(): JSX.Element | null {
                         placeholder="example@email.com"
                         required
                     />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">한능검 공식 사이트 ID</label>
+                    <input 
+                        type="text" 
+                        value={hanneunggeomId}
+                        onChange={(e) => setHanneunggeomId(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" 
+                        placeholder="공식 홈페이지(historyexam.go.kr) 아이디"
+                        required
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-700">한능검 공식 사이트 비밀번호 (선택)</label>
+                    <input 
+                        type="password" 
+                        value={hanneunggeomPassword}
+                        onChange={(e) => setHanneunggeomPassword(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" 
+                        placeholder="공식 홈페이지 비밀번호 (실시간 시험정보 연동용)"
+                    />
+                    <p className="mt-1 text-[11px] text-gray-400">본인의 한능검 신청 현황 및 결과를 실시간 연동하려는 경우에만 입력해 주세요. (더미 데이터 미적용)</p>
                 </div>
                 <div>
                     <label className="block text-sm font-medium mb-1 text-gray-700">비밀번호</label>

@@ -25,7 +25,7 @@ export default function LoginPage(): JSX.Element | null {
                             body: JSON.stringify({ email: "admin@admin.com", password: "admin" }),
                         });
                         localStorage.setItem("accessToken", data.accessToken);
-                        window.location.href = data.user?.role === "admin" ? "/admin" : "/education";
+                        window.location.href = data.user?.role === "admin" ? "/" : "/education";
                     } catch (err: any) {
                         setError(err.message || "자동 로그인에 실패했습니다.");
                         setIsChecking(false);
@@ -54,7 +54,7 @@ export default function LoginPage(): JSX.Element | null {
             });
             localStorage.setItem("accessToken", data.accessToken);
             if (data.user?.role === "admin") {
-                window.location.href = "/admin";
+                window.location.href = "/";
             } else {
                 window.location.href = "/education";
             }

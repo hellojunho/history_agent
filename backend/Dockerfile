@@ -15,6 +15,7 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV production
+ENV PLAYWRIGHT_BROWSERS_PATH=/app/.cache/ms-playwright
 
 # Install python3, pip, and make (essential for builds)
 RUN apt-get update && apt-get install -y \

@@ -22,6 +22,21 @@ export class User {
     @Column({ type: "varchar", nullable: true, name: "profile_image" })
     profileImage!: string | null;
 
+    @Column({ type: "varchar", nullable: true, name: "hanneunggeom_id" })
+    hanneunggeomId!: string | null;
+
+    @Column({ type: "varchar", nullable: true, name: "hanneunggeom_password" })
+    hanneunggeomPassword!: string | null;
+
+    @Column({ type: "json", nullable: true, name: "hanneunggeom_applications_cache" })
+    hanneunggeomApplicationsCache!: Record<string, unknown>[] | null;
+
+    @Column({ type: "json", nullable: true, name: "hanneunggeom_results_cache" })
+    hanneunggeomResultsCache!: Record<string, unknown>[] | null;
+
+    @Column({ type: "timestamp", nullable: true, name: "hanneunggeom_cache_updated_at" })
+    hanneunggeomCacheUpdatedAt!: Date | null;
+
     @Column({ type: "boolean", default: true, name: "is_activate" })
     isActivate!: boolean;
 

@@ -32,6 +32,8 @@ export async function GET(request: Request): Promise<NextResponse> {
             role: user.role,
             nickname: user.nickname,
             profileImage: user.profileImage,
+            hanneunggeomId: user.hanneunggeomId,
+            hanneunggeomPassword: user.hanneunggeomPassword,
             createdAt: user.createdAt
         }, { status: 200 });
     } catch (error: unknown) {
@@ -130,7 +132,7 @@ export async function PATCH(request: Request): Promise<NextResponse> {
             return NextResponse.json({ message: "Invalid token" }, { status: 401 });
         }
 
-        const { nickname, profileImage } = await request.json();
+        const { nickname, profileImage, hanneunggeomId, hanneunggeomPassword } = await request.json();
         
         const dataSource = await initializeDatabase();
         const userRepository = dataSource.getRepository(User);
@@ -200,6 +202,24 @@ export async function PATCH(request: Request): Promise<NextResponse> {
             isUpdated = true;
         }
 
+        // 한능검 공식 아이디 변경 로직
+        if (hanneunggeomId !== undefined && hanneunggeomId !== user.hanneunggeomId) {
+            user.hanneunggeomId = hanneunggeomId;
+            user.hanneunggeomApplicationsCache = null;
+            user.hanneunggeomResultsCache = null;
+            user.hanneunggeomCacheUpdatedAt = null;
+            isUpdated = true;
+        }
+
+        // 한능검 공식 비밀번호 변경 로직
+        if (hanneunggeomPassword !== undefined && hanneunggeomPassword !== user.hanneunggeomPassword) {
+            user.hanneunggeomPassword = hanneunggeomPassword;
+            user.hanneunggeomApplicationsCache = null;
+            user.hanneunggeomResultsCache = null;
+            user.hanneunggeomCacheUpdatedAt = null;
+            isUpdated = true;
+        }
+
         if (isUpdated) {
             await userRepository.save(user);
         }
@@ -212,6 +232,8 @@ export async function PATCH(request: Request): Promise<NextResponse> {
                 role: user.role,
                 nickname: user.nickname,
                 profileImage: user.profileImage,
+                hanneunggeomId: user.hanneunggeomId,
+                hanneunggeomPassword: user.hanneunggeomPassword,
                 lastNicknameChangedAt: user.lastNicknameChangedAt
             }
         }, { status: 200 });

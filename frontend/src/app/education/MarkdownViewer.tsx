@@ -63,10 +63,95 @@ export default function MarkdownViewer({ content }: Props) {
     const processedContent = fixBoldBoundaries(processBoldQuotes(processYeobaek(content)));
 
     return (
-        <article className="prose prose-slate max-w-none prose-headings:font-black prose-headings:tracking-[-0.03em] prose-p:text-[15px] prose-p:leading-8 prose-strong:text-slate-950 prose-h1:mb-4 prose-h1:text-4xl prose-h1:text-slate-950 prose-h2:mt-14 prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-3 prose-h2:text-2xl prose-h2:text-slate-950 prose-h3:mt-8 prose-h3:text-xl prose-h3:text-blue-800 prose-ul:pl-5 prose-li:my-2 prose-li:marker:text-blue-500 prose-blockquote:rounded-2xl prose-blockquote:border-l-4 prose-blockquote:border-blue-600 prose-blockquote:bg-blue-50/60 prose-blockquote:px-6 prose-blockquote:py-5 prose-blockquote:my-6 prose-blockquote:text-slate-800 prose-blockquote:not-italic prose-blockquote:shadow-sm prose-a:text-blue-700 prose-a:font-bold prose-table:block prose-table:overflow-x-auto prose-table:rounded-2xl prose-table:border prose-table:border-slate-200 prose-th:bg-slate-100 prose-th:px-4 prose-th:py-3 prose-th:text-left prose-td:border-t prose-td:border-slate-200 prose-td:px-4 prose-td:py-3 prose-img:rounded-xl">
+        <article className="prose prose-slate max-w-none prose-headings:my-0 prose-p:my-0 prose-ul:my-0 prose-ol:my-0 prose-li:my-0 prose-blockquote:my-0 prose-blockquote:border-none prose-blockquote:bg-transparent prose-blockquote:p-0 prose-table:my-0 prose-th:p-0 prose-td:p-0">
             <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
                 components={{
+                    h1: ({ children }) => (
+                        <h1 className="mb-6 mt-2 text-3xl font-black tracking-[-0.04em] text-slate-950">
+                            {children}
+                        </h1>
+                    ),
+                    h2: ({ children }) => (
+                        <h2 className="group flex items-center gap-2 mt-12 mb-5 text-xl font-bold text-slate-900 border-l-4 border-blue-500 pl-3.5 tracking-tight">
+                            {children}
+                        </h2>
+                    ),
+                    h3: ({ children }) => (
+                        <h3 className="mt-8 mb-3.5 text-[15px] font-bold text-slate-800 bg-slate-50 border border-slate-200/60 px-3 py-1.5 rounded-xl w-fit flex items-center gap-1.5 shadow-sm">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                            {children}
+                        </h3>
+                    ),
+                    p: ({ children }) => (
+                        <p className="mb-4 text-[15px] leading-[1.85] text-slate-600 tracking-tight [word-break:keep-all]">
+                            {children}
+                        </p>
+                    ),
+                    strong: ({ children }) => (
+                        <strong className="font-bold text-blue-600 bg-blue-50/80 px-1.5 py-0.5 rounded-md border border-blue-100/50 mx-[2px] transition-all hover:bg-blue-100/70">
+                            {children}
+                        </strong>
+                    ),
+                    blockquote: ({ children }) => (
+                        <blockquote className="my-6 rounded-2xl border-l-4 border-indigo-500 bg-gradient-to-br from-indigo-50/40 via-blue-50/20 to-white px-6 py-5 text-[14px] leading-[1.8] text-slate-800 shadow-sm not-italic border border-slate-100">
+                            {children}
+                        </blockquote>
+                    ),
+                    hr: () => (
+                        <div className="my-10 h-[1px] bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+                    ),
+                    ul: ({ children }) => (
+                        <ul className="my-4 pl-1 space-y-2 list-none">
+                            {children}
+                        </ul>
+                    ),
+                    ol: ({ children }) => (
+                        <ol className="my-4 pl-5 space-y-2.5 list-decimal text-slate-600 text-[15px] tracking-tight">
+                            {children}
+                        </ol>
+                    ),
+                    li: ({ children }) => {
+                        // 순서 없는 리스트일 경우에만 커스텀 점 마커 부여
+                        return (
+                            <li className="relative pl-5 text-[15px] leading-[1.8] text-slate-600 tracking-tight [word-break:keep-all]">
+                                <span className="absolute left-1.5 top-2.5 h-1.5 w-1.5 rounded-full bg-blue-400/80" />
+                                {children}
+                            </li>
+                        );
+                    },
+                    table: ({ children }) => (
+                        <div className="my-6 w-full overflow-hidden rounded-2xl border border-slate-200/70 shadow-sm bg-white">
+                            <table className="w-full border-collapse text-left text-[14px]">
+                                {children}
+                            </table>
+                        </div>
+                    ),
+                    thead: ({ children }) => (
+                        <thead className="bg-slate-50/80 font-semibold text-slate-800 border-b border-slate-200/70">
+                            {children}
+                        </thead>
+                    ),
+                    tbody: ({ children }) => (
+                        <tbody className="divide-y divide-slate-100 text-slate-600">
+                            {children}
+                        </tbody>
+                    ),
+                    tr: ({ children }) => (
+                        <tr className="hover:bg-slate-50/40 transition-colors">
+                            {children}
+                        </tr>
+                    ),
+                    th: ({ children }) => (
+                        <th className="px-4 py-3 text-left font-bold text-slate-800 border-none">
+                            {children}
+                        </th>
+                    ),
+                    td: ({ children }) => (
+                        <td className="px-4 py-3 border-none">
+                            {children}
+                        </td>
+                    ),
                     img: ({ src, alt }) => (
                         <span className="my-10 flex w-full flex-col items-center justify-center">
                             <span className="block overflow-hidden rounded-[28px] border border-slate-200/70 bg-white p-3 shadow-[0_16px_36px_rgba(15,23,42,0.08)] transition-shadow hover:shadow-[0_20px_42px_rgba(15,23,42,0.1)]">
